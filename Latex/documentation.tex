@@ -10,11 +10,12 @@
 \usepackage{subcaption}
 
 \begin{document}
+
 \section{February 29th 2016}
 \begin{itemize}
 \item Show the area with a colorbar showing height
 \item Fix problem with z-values close to infinity or below zero
-\item Look at the spill point analysis for 
+\item Look at the spill point analysis for the area after lowering the terrain at all places where there are lakes
 \end{itemize}
 
 \subsection{Overview of the landscape that we have data over}
@@ -34,9 +35,6 @@
     \caption{Two different views of the landscape.}
 \end{figure*}
 
-
-
-
 \begin{figure}[H]
   \centering
     \includegraphics[width=1.1\textwidth]{landscape_hoh.eps}
@@ -52,6 +50,32 @@ zvals = inpaint\_nans(double(zvals))
 \end{align}
 All $z$-values larger than a threshold will be set to NaN and given as input to a function that finds NaN-elements in a matrix and interpolates them with neighboring points. The function can be found in the link below:\\
  http://www.mathworks.com/matlabcentral/fileexchange/4551-inpaint-nans
+
+\subsection{Spy plot of the lake (innsjo.tiff) file}
+\begin{figure}[h]
+  \centering
+    \includegraphics[width=0.8\textwidth]{area_lakes_spyplot.eps}
+  \caption{A spy plot of the area illustrating the lakes. All blue points will have a boolean which is true in the matrix. All else are false.}
+\end{figure}
+
+\subsection{Lowering the terrain at the points where we know there are rivers}
+The idea is that we can improve the spill point analysis by lowering the terrain at all points where we know there is a lake. This is given from the anders\_innsjo.tiff file, which has a bool for every point indicating whether or not there is a lake at the coordinate. Lowering the terrain by 20 meters for these points, with a downsampling factor of 8, yields the figure \ref{fig:lowered_20m_dsfac8}.
+
+\begin{figure}[h]
+\label{fig:lowered_20m_dsfac8} 
+  \centering
+    \includegraphics[width=1.2\textwidth]{reduced_height_20m_dsfacf8.eps}
+  \caption{Spill point analysis after lowering lakes by 20 meters. Dsfac = 8}
+\end{figure}
+
+\begin{figure}[h]
+\label{fig:lowered_100m_dsfac8}
+  \centering
+    \includegraphics[width=1.2\textwidth]{reduced_height_100m_dsfacf8.eps}
+  \caption{Spill point analysis after lowering lakes by 100 meters. Dsfac = 8}
+\end{figure}
+
+
 
 
 \end{document}
