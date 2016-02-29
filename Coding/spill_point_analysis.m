@@ -7,7 +7,7 @@ I = GEOTIFF_READ('anders_hoh.tiff');
 %imshow(I.z, 'xdata', I.x, 'ydata', I.y); caxis([120, 1000]);
 
 % downsampling
-ds_fac = 8; % valid is 1, 2 and 4  (to avoid fractions)
+ds_fac = 16; % valid is 1, 2 and 4  (to avoid fractions)
 
 % computing lateral extent
 X = abs(I.x(end) - I.x(1));
