@@ -1,5 +1,6 @@
 mrstModule add co2lab; % for spill point analysis
 mrstModule add libgeometry; % for mcomputeGeometry
+addpath('../Inpaint_nans/')
 
 %% Loading image
 I = GEOTIFF_READ('anders_hoh.tiff'); 
@@ -19,7 +20,16 @@ G = cartGrid([xres, yres, 1], [X, Y, 1]);
 
 % Setting correct z-coordinates and computing geometry
 zvals = I.z(1:ds_fac:(end-1), 1:ds_fac:(end-1));
-zvals = zvals(:); 
+
+% Interpolate all heights which are clearly wrong
+if (max(max(zvals)) > 2469 || min(min(zvals)) < 0)
+    zvals(zvals > 2469) = NaN;
+    zvals(zvals < 0) = NaN;
+    num_of_nans = sum(sum(isnan(zvals)));
+    zvals = inpaint_nans(double(zvals));
+end
+
+zvals = zvals(:);
 
 G.nodes.coords(:,3) = [zvals; ones(size(zvals)) * max(zvals) + 1];
 G = mcomputeGeometry(G);
@@ -37,3 +47,6 @@ set(gca, 'zdir', 'normal'); colorbar;
 % Plot all trap cells (i.e. "lake cells")
 hold on;
 plotGrid(extractSubgrid(Gt, find(ts.traps~=0)));
+title('Plot of trap cells')
+xlabel('Meters')
+ylabel('Meters')
