@@ -51,31 +51,44 @@ zvals = inpaint\_nans(double(zvals))
 All $z$-values larger than a threshold will be set to NaN and given as input to a function that finds NaN-elements in a matrix and interpolates them with neighboring points. The function can be found in the link below:\\
  http://www.mathworks.com/matlabcentral/fileexchange/4551-inpaint-nans
 
-\subsection{Spy plot of the lake (innsjo.tiff) file}
-\begin{figure}[h]
-  \centering
-    \includegraphics[width=0.8\textwidth]{area_lakes_spyplot.eps}
-  \caption{A spy plot of the area illustrating the lakes. All blue points will have a boolean which is true in the matrix. All else are false.}
-\end{figure}
 
 \subsection{Lowering the terrain at the points where we know there are rivers}
-The idea is that we can improve the spill point analysis by lowering the terrain at all points where we know there is a lake. This is given from the anders\_innsjo.tiff file, which has a bool for every point indicating whether or not there is a lake at the coordinate. Lowering the terrain by 20 meters for these points, with a downsampling factor of 8, yields the figure \ref{fig:lowered_20m_dsfac8}.
+The idea is that we can improve the spill point analysis by lowering the terrain at all points where we know there is a lake. This is given from the anders\_innsjo.tiff file, which has a bool for every point indicating whether or not there is a lake at the coordinate. Lowering the terrain by 20 meters for these points, with a downsampling factor of 8, yields the figure \ref{fig:lowered_20m_dsfac8}. Lowering by 100 meters results in figure \ref{fig:lowered_100m_dsfac8}.
 
-\begin{figure}[h]
-\label{fig:lowered_20m_dsfac8} 
+\begin{figure}[H]
   \centering
     \includegraphics[width=1.2\textwidth]{reduced_height_20m_dsfacf8.eps}
   \caption{Spill point analysis after lowering lakes by 20 meters. Dsfac = 8}
+  \label{fig:lowered_20m_dsfac8} 
 \end{figure}
 
-\begin{figure}[h]
-\label{fig:lowered_100m_dsfac8}
+\begin{figure}[H]
   \centering
     \includegraphics[width=1.2\textwidth]{reduced_height_100m_dsfacf8.eps}
   \caption{Spill point analysis after lowering lakes by 100 meters. Dsfac = 8}
+  \label{fig:lowered_100m_dsfac8}
 \end{figure}
 
+\section{March 2nd 2016}
+\begin{itemize}
+\item Fix problem with negative heights after lowering
+\end{itemize}
 
+\subsection{Fixing problem with negative heights}
+After realizing that the strange result seen in figure \ref{fig:lowered_100m_dsfac8} came from the fact that we had negative heights in the landscape after lowering the terrain, we get the more correct result in figure \ref{fig:trap_cells_100_ds8}. For 20 meters it is seen in figure \ref{fig:trap_cells_20_ds8}.
 
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1.2\textwidth]{plot_trap_cells_100_df8.eps}
+  \caption{Spill point analysis after lowering lakes by 100 meters. Dsfac = 8}
+  \label{fig:trap_cells_100_ds8}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=1.2\textwidth]{plot_trap_cells_20_df8.eps}
+  \caption{Spill point analysis after lowering lakes by 20 meters. Dsfac = 8}
+  \label{fig:trap_cells_20_ds8}
+\end{figure}
 
 \end{document}
