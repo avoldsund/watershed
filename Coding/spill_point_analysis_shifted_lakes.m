@@ -30,8 +30,9 @@ xres_J = numel(J.x)/ds_fac - 1;
 yres_J = numel(J.y)/ds_fac - 1;
 G_J = cartGrid([xres_J, yres_J, 1], [X_J, Y_J, 1]);
 zvals_J = J.z(1:ds_fac:(end-1), 1:ds_fac:(end-1));
-zvals = zvals - double(zvals_J) * 100;
 
+zvals = zvals - double(zvals_J) * 20;
+zvals = max(0, zvals);
 
 %X_K = abs(K.x(end) - K.x(1));
 %Y_K = abs(K.y(end) - K.y(1));
