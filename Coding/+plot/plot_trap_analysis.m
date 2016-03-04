@@ -7,8 +7,9 @@ function plot_trap_analysis(topGrid, trapStructure)
 plotCellData(topGrid, topGrid.cells.H, 'edgecolor', 'none');
 cmap = flipud(copper);
 colormap(cmap);
-set(gca, 'zdir', 'normal'); colorbar;
+colorbar;
 
+%set(gca, 'zdir', 'normal'); 
 % Plot all trap cells (i.e. "lake cells")
 hold on;
 plotGrid(extractSubgrid(topGrid, find(trapStructure.traps~=0)));
