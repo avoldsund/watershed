@@ -2,60 +2,28 @@ mrstModule add co2lab; % for spill point analysis
 mrstModule add libgeometry; % for mcomputeGeometry
 addpath('../Inpaint_nans/')
 
-%% Loading image
-I = GEOTIFF_READ('anders_hoh.tiff'); 
-%imshow(I.z, 'xdata', I.x, 'ydata', I.y); caxis([120, 1000]);
+% Set downsampling factor and import data
+ds_fac = 32;
+[I_landscape, G_landscape, zvals_landscape] = add_tiff_data('anders_hoh.tiff', ds_fac);
+[I_lakes, G_lakes, zvals_lakes] = add_tiff_data('anders_innsjo.tiff', ds_fac);
 
-% downsampling
-ds_fac = 8; % valid is 1, 2 and 4  (to avoid fractions)
-
-% computing lateral extent
-X = abs(I.x(end) - I.x(1));
-Y = abs(I.y(end) - I.y(1));
-
-% I.info.map_info confirms that step length is uniform
-xres = numel(I.x)/ds_fac - 1;
-yres = numel(I.y)/ds_fac - 1;
-G = cartGrid([xres, yres, 1], [X, Y, 1]);
-
-% Setting correct z-coordinates and computing geometry
-zvals = I.z(1:ds_fac:(end-1), 1:ds_fac:(end-1));
-
-J = GEOTIFF_READ('anders_innsjo.tiff');
-%K = GEOTIFF_READ('anders_elvbekk.tiff');
-
-X_J = abs(J.x(end) - J.x(1));
-Y_J = abs(J.y(end) - J.y(1));
-xres_J = numel(J.x)/ds_fac - 1;
-yres_J = numel(J.y)/ds_fac - 1;
-G_J = cartGrid([xres_J, yres_J, 1], [X_J, Y_J, 1]);
-zvals_J = J.z(1:ds_fac:(end-1), 1:ds_fac:(end-1));
-
-zvals = zvals - double(zvals_J) * 20;
-zvals = max(0, zvals);
-
-%X_K = abs(K.x(end) - K.x(1));
-%Y_K = abs(K.y(end) - K.y(1));
-%xres_K = numel(K.x)/ds_fac - 1;
-%yres_K = numel(K.y)/ds_fac - 1;
-%G_K = cartGrid([xres_K, yres_K, 1], [X_K, Y_K, 1]);
-%zvals_K = K.z(1:ds_fac:(end-1), 1:ds_fac:(end-1));
-%zvals = zvals - double(zvals_J) * 20 - double(zvals_K) * 20;
-
-
+% Do some processing to make sure that the matrices are correct
+% Make sure that anders_innsjo is a boolean matrix
+zvals_lakes = make_matrix_boolean(zvals_lakes);
 % Interpolate all heights which are clearly wrong
-if (max(max(zvals)) > 2469 || min(min(zvals)) < 0)
-    zvals(zvals > 2469) = NaN;
-    zvals(zvals < 0) = NaN;
-    num_of_nans = sum(sum(isnan(zvals)));
-    zvals = inpaint_nans(double(zvals));
-end
+zvals_landscape = interpolate_extreme_values(0, 2469, zvals_landscape);
 
-zvals = zvals(:);
+% Lower terrain for all lakes and make sure the heights are positive 
+zvals_landscape = zvals_landscape - double(zvals_lakes) * 20;
+zvals_landscape = max(0, zvals_landscape);
 
-G.nodes.coords(:,3) = [zvals; ones(size(zvals)) * max(zvals) + 1];
-G = mcomputeGeometry(G);
-Gt = topSurfaceGrid(G);
+
+% Make the input for the trapAnalysis function
+zvals_landscape = zvals_landscape(:);
+
+G_landscape.nodes.coords(:,3) = [zvals_landscape; ones(size(zvals_landscape)) * max(zvals_landscape) + 1];
+G_landscape = mcomputeGeometry(G_landscape);
+Gt = topSurfaceGrid(G_landscape);
 
 % performing spill point analysis
 tic; ts = trapAnalysis(Gt, false); toc
