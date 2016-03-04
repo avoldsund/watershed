@@ -4,12 +4,10 @@ function plot_trap_analysis(topGrid, trapStructure)
 % creates a plot of this showing all traps
 
 % show map
-plotCellData(topGrid, topGrid.cells.H, 'edgecolor', 'none');
+plotCellData(topGrid, topGrid.cells.z, 'edgecolor', 'none');
 cmap = flipud(copper);
 colormap(cmap);
 colorbar;
-
-%set(gca, 'zdir', 'normal'); 
 
 % Plot all trap cells (i.e. "lake cells")
 hold on;
@@ -17,5 +15,7 @@ plotGrid(extractSubgrid(topGrid, find(trapStructure.traps~=0)));
 title('Plot of trap cells')
 xlabel('Meters')
 ylabel('Meters')
+
+set(gca, 'zdir', 'normal');
 
 end
