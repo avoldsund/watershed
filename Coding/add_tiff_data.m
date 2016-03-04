@@ -1,22 +1,21 @@
-function dataInfo, cartGrid = add_tiff_data(fileName, downSamplingFactor)
-% ADD_TIFF_DATA 
+function [info, grid, zvals] = add_tiff_data(fileName, downSamplingFactor)
+% ADD_TIFF_DATA Returns info object, a cartesian grid and zvals for an area
+% add_tiff(fileName, downSamplingFactor) takes as input the filename of a
+% tiff data file and a downsampling factor.
 
 % Loading image
-I = GEOTIFF_READ(fileName);
+info = GEOTIFF_READ(fileName);
 
 % Computing lateral extent in meters
-X = abs(I.x(end) - I.x(1));
-Y = abs(I.y(end) - I.y(1));
+X = abs(info.x(end) - info.x(1));
+Y = abs(info.y(end) - info.y(1));
 
 % I.info.map_info confirms that step length is uniform
-xres = numel(I.x)/ds_fac - 1;
-yres = numel(I.y)/ds_fac - 1;
-G = cartGrid([xres, yres, 1], [X, Y, 1]);
+xres = numel(info.x)/downSamplingFactor - 1;
+yres = numel(info.y)/downSamplingFactor - 1;
+grid = cartGrid([xres, yres, 1], [X, Y, 1]);
 
 % Setting correct z-coordinates and computing geometry
-zvals = I.z(1:ds_fac:(end-1), 1:ds_fac:(end-1));
-
-
+zvals = info.z(1:downSamplingFactor:(end-1), 1:downSamplingFactor:(end-1));
 
 end
-
