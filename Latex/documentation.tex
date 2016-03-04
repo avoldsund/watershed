@@ -74,21 +74,38 @@ The idea is that we can improve the spill point analysis by lowering the terrain
 \item Fix problem with negative heights after lowering
 \end{itemize}
 
-\subsection{Fixing problem with negative heights}
-After realizing that the strange result seen in figure \ref{fig:lowered_100m_dsfac8} came from the fact that we had negative heights in the landscape after lowering the terrain, we get the more correct result in figure \ref{fig:trap_cells_100_ds8}. For 20 meters it is seen in figure \ref{fig:trap_cells_20_ds8}.
+
+\section{March 4th 2016}
+\begin{itemize}
+\item Fix inverted z-axis in plot
+\end{itemize}
+
+After fixing the inverted z-axis in the plots, we now yield the solutions in figure \ref{fig:trap_analysis_overview_20m_df8} and figure \ref{fig:trap_analysis_traps_20m_df8}.
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=1.2\textwidth]{plot_trap_cells_100_df8.eps}
-  \caption{Spill point analysis after lowering lakes by 100 meters. Dsfac = 8}
-  \label{fig:trap_cells_100_ds8}
+    \includegraphics[width=0.8\textwidth]{20m_df8_lakes_bigrivers_overview.pdf}
+  \caption{Spill point analysis after lowering lakes by 20 meters. Dsfac = 8. Included here are lakes and big rivers.}
+  \label{fig:trap_analysis_overview_20m_df8}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-    \includegraphics[width=1.2\textwidth]{plot_trap_cells_20_df8.eps}
-  \caption{Spill point analysis after lowering lakes by 20 meters. Dsfac = 8}
-  \label{fig:trap_cells_20_ds8}
+    \includegraphics[width=0.8\textwidth]{20m_df8_lakes_bigrivers.pdf}
+  \caption{Spill point analysis after lowering lakes by 20 meters. Dsfac = 8. Included here are lakes and big rivers.}
+  \label{fig:trap_analysis_traps_20m_df8}
 \end{figure}
+
+When doing the same for 100 meters we obtain figure \ref{fig:trap_analysis_traps_100m_df8}.
+
+\begin{figure}[H]
+  \centering
+    \includegraphics[width=0.5\textwidth]{100m_df8_lakes_bigrivers.pdf}
+  \caption{Spill point analysis after lowering lakes by 100 meters. Dsfac = 8. Included here are lakes and big rivers.}
+  \label{fig:trap_analysis_traps_100m_df8}
+\end{figure}
+
+Save file to eps and convert to pdf
+
 
 \end{document}
