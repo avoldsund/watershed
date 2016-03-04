@@ -10,6 +10,7 @@ colormap(cmap);
 colorbar;
 
 %set(gca, 'zdir', 'normal'); 
+
 % Plot all trap cells (i.e. "lake cells")
 hold on;
 plotGrid(extractSubgrid(topGrid, find(trapStructure.traps~=0)));

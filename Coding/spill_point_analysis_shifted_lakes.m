@@ -3,19 +3,21 @@ mrstModule add libgeometry; % for mcomputeGeometry
 addpath('../Inpaint_nans/')
 
 % Set downsampling factor and import data
-ds_fac = 32;
-[I_landscape, G_landscape, zvals_landscape] = add_tiff_data('anders_hoh.tiff', ds_fac);
-[I_lakes, G_lakes, zvals_lakes] = add_tiff_data('anders_innsjo.tiff', ds_fac);
+ds_fac = 16;
+[I_landscape, G_landscape, zvals_landscape] = geometry.add_tiff_data('anders_hoh.tiff', ds_fac);
+[I_lakes, G_lakes, zvals_lakes] = geometry.add_tiff_data('anders_innsjo.tiff', ds_fac);
+%[I_rivers, G_rivers, zvals_rivers] = geometry.add_tiff_data('anders_elvbekk.tiff', ds_fac);
+
 
 % Do some processing to make sure that the matrices are correct
-
 % Make sure that anders_innsjo is a boolean matrix
+%zvals_rivers = helpFunctions.make_matrix_boolean(zvals_rivers);
 zvals_lakes = helpFunctions.make_matrix_boolean(zvals_lakes);
 % Interpolate all heights which are clearly wrong
 zvals_landscape = helpFunctions.interpolate_extreme_values(0, 2469, zvals_landscape);
 
 % Lower terrain for all lakes and make sure the heights are positive 
-zvals_landscape = zvals_landscape - double(zvals_lakes) * 20;
+zvals_landscape = zvals_landscape - double(zvals_lakes); %* 20 - double(zvals_rivers);
 zvals_landscape = max(0, zvals_landscape);
 
 % Make the input for the trapAnalysis function
