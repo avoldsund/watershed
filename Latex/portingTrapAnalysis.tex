@@ -1,0 +1,32 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\begin{document}
+
+\section*{Porting trapAnalysis.m to Python}
+The function trapAnalysis($Gt$, $method$) takes as input a top surface grid $Gt$. There are two methods for doing the trapAnalysis, either a cell-centroid-based implementation or an edge-based implementation.
+
+So what is a top surface grid and do we need it for a cartesian grid?
+
+GEOTIFF$\_$READ will give an information object that contains a $x$-vector, $y$-vector and $z$-vector, which is the heights at each point ($x$, $y$). Info.info.map$\_$info gives d$x$, d$y$, min-$x$ and min-$y$. 
+
+We can use cartGrid to make a 3D (or 2D)-cartesian grid by inputting the number of cells in each direction, and the size of the domain in each direction. plotGrid plots our domain. We get a grid object that contains all cells, faces, nodes and holds the cartDims.
+
+
+\subsection{Problem: Calculating time of flight}
+If we have each point's neighbor with the largest descent we can move to this point, and then add that distance to a sum totalLength. We continue this process until we hit a major river, i.e. elvBekk-point. The time taken to reach this point can be calculated roughly by using one speed for landscape, and another speed for small rivers. Using $t = \frac{s}{v}$, where $t$ is the time, $s$ is the length and $v$ is the speed, we can find the time required.
+
+\subsection{Precipitation measurements}
+Given that it starts to rain in an area, it would be nice to know how much rain that would accumulate in the rivers. This is useful knowledge in the event of say a flooding. One way of doing this is looking at every watershed in the region. When we have the total area of a watershed, we can calculate how much water that potentially'll end up at the river outlet. We know the total amount of rain, so at some point, that is given no infiltration of water into the ground, this water will end up in the rivers.  
+
+\subsection{Indexing of the points in the landscape}
+						
+\subsection{Figuring out the watersheds in the area}
+
+\subsection{Knowledge about each point}
+For each point we need to know the coordinates, the height ($z$-value), which spill region it belongs to, i.e. the watershed, all the neighborhood nodes, and which area type it is. Is it a river or not? Knowing all points in a spill region tells us how big the area is as we know the area of each point/cell. Hence we'll know the total amount of precipitation. We need to know which of the neighbor nodes that is most downhill from it. This way we can form small rivers leading to larger rivers. We can do this by simply finding the neighbor with the largest height difference
+
+
+\end{document}
