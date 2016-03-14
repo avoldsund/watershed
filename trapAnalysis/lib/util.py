@@ -4,6 +4,9 @@ class NodeCollection:
 
     coordinates = None
 
+    def __init__(self, coordinates):
+        self.coordinates = coordinates
+
 
 
 
@@ -18,13 +21,11 @@ class LandscapeMetadata:
     x_coord_max = None
     y_coord_min = None
     y_coord_max = None
-    sampling_factor = None
 
-    def __init__(self, num_of_cells_x, num_of_cells_y, x_coord_min, x_coord_max, y_coord_min, y_coord_max, sampling_factor):
+    def __init__(self, num_of_cells_x, num_of_cells_y, x_coord_min, x_coord_max, y_coord_min, y_coord_max):
         self.num_of_cells_x = num_of_cells_x
         self.num_of_cells_y = num_of_cells_y
         self.x_coord_min = x_coord_min
         self.x_coord_max = x_coord_max
         self.y_coord_min = y_coord_min
         self.y_coord_max = y_coord_max
-        self.sampling_factor = sampling_factor
