@@ -1,31 +1,35 @@
-from numpy import matrix
+import numpy as np
 
-class NodeCollection:
+
+class Landscape:
 
     coordinates = None
 
-    def __init__(self, coordinates):
-        self.coordinates = coordinates
+    num_of_nodes_x = None
+    num_of_nodes_y = None
+    total_number_of_nodes = None
 
-
-
-
-
-
-
-
-class LandscapeMetadata:
-    num_of_cells_x = None
-    num_of_cells_y = None
     x_coord_min = None
     x_coord_max = None
     y_coord_min = None
     y_coord_max = None
 
-    def __init__(self, num_of_cells_x, num_of_cells_y, x_coord_min, x_coord_max, y_coord_min, y_coord_max):
-        self.num_of_cells_x = num_of_cells_x
-        self.num_of_cells_y = num_of_cells_y
-        self.x_coord_min = x_coord_min
-        self.x_coord_max = x_coord_max
-        self.y_coord_min = y_coord_min
-        self.y_coord_max = y_coord_max
+    def __init__(self, geo_transform, nx, ny):
+        self.num_of_nodes_x = nx
+        self.num_of_nodes_y = ny
+        self.x_min = geo_transform[0]
+        self.y_max = geo_transform[3]
+        self.x_max = self.x_min + geo_transform[1] * self.num_of_nodes_x
+        self.y_min = self.y_max + geo_transform[5] * self.num_of_nodes_y
+        self.total_number_of_nodes = nx * ny
+        self.coordinates = np.empty((self.total_number_of_nodes, 3))
+
+
+    def get_node_neighbors(self, node_index):
+        return None
+
+    def find_steepest_neighbors(self, node_index):
+        return None
+
+    def get_node_index(self, x_coord, y_coord):
+        return None
