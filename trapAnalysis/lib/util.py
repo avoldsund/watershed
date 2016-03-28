@@ -33,11 +33,35 @@ class Landscape:
             return
         self.step_size = step_size_x
 
-    def get_node_neighbors(self, node_index):
-        return None
 
-    def find_steepest_neighbors(self, node_index):
-        return None
+    def get_node_neighbors(self, node_index):
+        """
+        Returns the indices of the neighbors given the node index
+        :param node_index: Index of node
+        :return neighbors: Array of neighbor indices
+        """
+
+        neighbors = np.array([node_index - 1, node_index + 1, node_index - self.num_of_nodes_x - 1,
+                              node_index - self.num_of_nodes_x, node_index - self.num_of_nodes_x + 1,
+                              node_index + self.num_of_nodes_x - 1, node_index + self.num_of_nodes_x,
+                              node_index + self.num_of_nodes_x + 1])
+        # Remove all neighbors with negative indices or indices exceeding the total number of nodes
+        valid_neighbors = neighbors[(neighbors >= 0) & (neighbors < self.total_number_of_nodes)]
+
+        return valid_neighbors
+
 
     def get_node_index(self, x_coord, y_coord):
+        """
+        Given a node in the 2d-grid we return the index in the 1d-array
+        :param x_coord: Coordinate in the x-direction
+        :param y_coord: Coordinate in the y-direction
+        :return node_index:
+        """
+        node_index = x_coord * self.num_of_nodes_x + y_coord + 1
+
+        return node_index
+
+
+    def find_steepest_neighbors(self, node_index):
         return None
