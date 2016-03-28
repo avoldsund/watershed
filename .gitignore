@@ -8,3 +8,4 @@ mrst-2015b/
 *.tiff
 *.pyc
 *.gitignore~
+*.idea
