@@ -1,6 +1,5 @@
 *.dropbox.attr
 mrst-2015b/
-*.gitignore~
 *.synctex.gz
 *.log
 *.aux
