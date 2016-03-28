@@ -7,3 +7,4 @@ mrst-2015b/
 *.eps
 *.tiff
 *.pyc
+*.gitignore~
