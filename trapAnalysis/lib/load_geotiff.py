@@ -3,7 +3,12 @@ import numpy as np      # For masked matrices
 import util
 
 
-def load_dataset(filename):
+def load_data_set(filename):
+    """
+    Load the geotiff data set from the filename
+    :param filename: Name of the tiff file
+    :return data_set: Geotiff data
+    """
 
     data_set = gdal.Open(filename)
 
@@ -19,7 +24,7 @@ def get_array_from_band(data_set, band=1):
     Get data from selected band and remove invalid data points
     :param data_set: Geotiff data
     :param band: Different bands hold different information
-    :return: The array holding the data
+    :return arr: The array holding the data
     """
 
     band = data_set.GetRasterBand(band)
@@ -36,7 +41,7 @@ def set_landscape(data_set):
     """
     Set the metadata for the landscape grid
     :param data_set: Geotiff data
-    :return:
+    :return landscape: Object holding metadata for the grid
     """
 
     geo_transform = data_set.GetGeoTransform()
@@ -47,7 +52,13 @@ def set_landscape(data_set):
     return landscape
 
 
-def construct_landscape_grid(data_set, landscape):
+def construct_landscape_grid(arr, landscape):
+    """
+    Create an (m*n)x3 grid holding (x,y,z)-coordinates for all nodes in the grid
+    :param arr: Masked array
+    :param landscape: Metadata object
+    :return:
+    """
 
     unequal_num_of_nodes = (landscape.num_of_nodes_x != landscape.num_of_nodes_y)
     if unequal_num_of_nodes:
@@ -55,16 +66,16 @@ def construct_landscape_grid(data_set, landscape):
         return
 
     # Set x-coordinates, they will be row by row, so the x-grid is repeated
-    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
+    x_grid = np.arange(landscape.x_min, landscape.x_max, landscape.step_size)
     x = np.tile(x_grid, landscape.num_of_nodes_y)
     landscape.coordinates[:, 0] = x
 
     # Set y-coordinates, they will be have the same y-value for each row
-    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
+    y_grid = np.arange(landscape.y_max, landscape.y_min, -landscape.step_size)
     y = np.repeat(y_grid, landscape.num_of_nodes_y)
+
     landscape.coordinates[:, 1] = y
 
     # Set z-coordinates
-    arr_in_2d = get_array_from_band(data_set)
-    z = np.flatten(arr_in_2d) # This is possible to do faster, just wanted a working version
+    z = np.reshape(arr, (1, np.product(arr.shape)))[0]
     landscape.coordinates[:, 2] = z
