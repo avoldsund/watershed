@@ -1,1 +1,4 @@
 *.Rhistory
+*.aux
+*.pdf
+*.synctex.gz
