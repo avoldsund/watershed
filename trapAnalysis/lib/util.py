@@ -3,16 +3,6 @@ import numpy as np
 
 class Landscape:
 
-    #coordinates = None
-    #num_of_nodes_x = None
-    #num_of_nodes_y = None
-    #total_number_of_nodes = None
-    #x_min = None
-    #x_max = None
-    #y_min = None
-    #y_max = None
-    #step_size = None
-
     def __init__(self, geo_transform, nx, ny):
 
         self.num_of_nodes_x = nx
@@ -32,26 +22,23 @@ class Landscape:
             return
         self.step_size = step_size_x
 
-    #def __init__(self):
-    #    self.num_of_nodes_x = None
-    #    self.num_of_nodes_y = None
 
-    def get_node_neighbors(self, node_index):
-        """
-        Returns the indices of the neighbors given the node index
-        :param node_index: Index of node
-        :return neighbors: Array of neighbor indices
-        """
+def get_node_neighbors(node_index, num_of_nodes_x, num_of_nodes_y):
+    """
+    Returns the indices of the neighbors given the node index
+    :param node_index: Index of node
+    :return neighbors: Array of neighbor indices
+    """
+    total_number_of_nodes = num_of_nodes_x * num_of_nodes_y
 
-        neighbors = np.array([node_index - 1, node_index + 1, node_index - self.num_of_nodes_x - 1,
-                              node_index - self.num_of_nodes_x, node_index - self.num_of_nodes_x + 1,
-                              node_index + self.num_of_nodes_x - 1, node_index + self.num_of_nodes_x,
-                              node_index + self.num_of_nodes_x + 1])
-        # Remove all neighbors with negative indices or indices exceeding the total number of nodes
-        valid_neighbors = neighbors[(neighbors >= 0) & (neighbors < self.total_number_of_nodes)]
+    neighbors = np.array([node_index - 1, node_index + 1, node_index - num_of_nodes_x - 1,
+                          node_index - num_of_nodes_x, node_index - num_of_nodes_x + 1,
+                          node_index + num_of_nodes_x - 1, node_index + num_of_nodes_x,
+                          node_index + num_of_nodes_x + 1])
+    # Remove all neighbors with negative indices or indices exceeding the total number of nodes
+    valid_neighbors = neighbors[(neighbors >= 0) & (neighbors < total_number_of_nodes)]
 
-        return valid_neighbors
-
+    return valid_neighbors
 
 
 def find_steepest_neighbors(self, node_index):
