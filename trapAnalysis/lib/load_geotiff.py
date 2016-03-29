@@ -31,6 +31,7 @@ def get_array_from_band(data_set, band=1):
     arr = np.ma.masked_array(band.ReadAsArray())
 
     no_data_value = band.GetNoDataValue()
+    print np.count_nonzero(arr[arr == no_data_value])
     if no_data_value:
         arr[arr == no_data_value] = np.ma.masked
 
@@ -66,12 +67,12 @@ def construct_landscape_grid(arr, landscape):
         return
 
     # Set x-coordinates, they will be row by row, so the x-grid is repeated
-    x_grid = np.arange(landscape.x_min, landscape.x_max, landscape.step_size)
+    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
     x = np.tile(x_grid, landscape.num_of_nodes_y)
     landscape.coordinates[:, 0] = x
 
     # Set y-coordinates, they will be have the same y-value for each row
-    y_grid = np.arange(landscape.y_max, landscape.y_min, -landscape.step_size)
+    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
     y = np.repeat(y_grid, landscape.num_of_nodes_y)
 
     landscape.coordinates[:, 1] = y
