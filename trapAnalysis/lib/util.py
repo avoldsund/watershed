@@ -29,20 +29,29 @@ def get_node_neighbors(node_index, num_of_nodes_x, num_of_nodes_y):
     :param node_index: Index of node
     :return neighbors: Array of neighbor indices
     """
-    total_number_of_nodes = num_of_nodes_x * num_of_nodes_y
 
-    neighbors = np.array([node_index - 1, node_index + 1, node_index - num_of_nodes_x - 1,
+    total_number_of_nodes = num_of_nodes_x * num_of_nodes_y
+    valid_neighbors = np.array([node_index - 1, node_index + 1, node_index - num_of_nodes_x - 1,
                           node_index - num_of_nodes_x, node_index - num_of_nodes_x + 1,
                           node_index + num_of_nodes_x - 1, node_index + num_of_nodes_x,
                           node_index + num_of_nodes_x + 1])
     # Remove all neighbors with negative indices or indices exceeding the total number of nodes
-    valid_neighbors = neighbors[(neighbors >= 0) & (neighbors < total_number_of_nodes)]
+    #valid_neighbors = neighbors[(neighbors >= 0) & (neighbors < total_number_of_nodes)]
 
     return valid_neighbors
 
 
-def find_steepest_neighbors(self, node_index):
+def find_steepest_neighbors(node_index):
     return None
+
+
+def get_node_row_and_col_from_index(node_index, num_of_nodes_x, num_of_nodes_y):
+
+    row_number = node_index/num_of_nodes_y
+    col_number = node_index % num_of_nodes_x
+    coordinates = (row_number, col_number)
+
+    return coordinates
 
 
 def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
@@ -57,3 +66,4 @@ def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
     node_index = x_coord + num_of_nodes_x * (num_of_nodes_y - (y_coord + 1))
 
     return node_index
+
