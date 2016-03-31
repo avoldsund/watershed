@@ -104,9 +104,9 @@ def is_boundary_node(node_index, num_of_cols, num_of_rows):
     return is_boundary
 
 
-def get_boundary_node_indices(num_of_cols, num_of_rows):
+def get_boundary_indices(num_of_cols, num_of_rows):
     """
-    Returns an array of all indices in the 1d-array that are boundary nodes
+    Returns an array of all indices in the 1d-array that are boundary nodes in the 2d-grid
     :param num_of_cols: Number of columns in the 2d-grid
     :param num_of_rows: Number of rows in the 2d-grid
     :return boundary_indices: Array of boundary indices
@@ -126,3 +126,17 @@ def get_boundary_node_indices(num_of_cols, num_of_rows):
     boundary_indices[3 * num_of_cols - 2: 4 * num_of_cols - 2] = right
 
     return boundary_indices
+
+
+def get_interior_indices(num_of_cols, num_of_rows):
+    """
+    Returns array of interior indices
+    :param num_of_cols: Number of columns in the 2d-grid
+    :param num_of_rows: Number of rows in the 2d-grid
+    :return interior_indices: Indices of all interior nodes in the 2d-grid
+    """
+
+    indices = np.arange(0, num_of_cols * num_of_rows, 1)
+    interior_indices = np.setdiff1d(indices, get_boundary_indices(num_of_cols, num_of_rows))
+
+    return interior_indices
