@@ -23,34 +23,6 @@ class Landscape:
         self.step_size = step_size_x
 
 
-def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
-    """
-    Returns the indices of the neighbors of boundary nodes given the node index
-    :param node_index: Index of node
-    :return neighbors: Array of neighbor indices
-    """
-
-    (r, c) = get_node_row_and_col_from_index(node_index, num_of_nodes_x)
-
-    for k in range(max(0, c-1)), min(num_of_nodes_x, c+1):
-        for l in range(max(0, r-1), min(num_of_nodes_y, r+1)):
-            nbr_index = get_node_index_from_row_and_col(l, k)
-
-    total_number_of_nodes = num_of_nodes_x * num_of_nodes_y
-    valid_neighbors = np.array([node_index - 1, node_index + 1, node_index - num_of_nodes_x - 1,
-                          node_index - num_of_nodes_x, node_index - num_of_nodes_x + 1,
-                          node_index + num_of_nodes_x - 1, node_index + num_of_nodes_x,
-                          node_index + num_of_nodes_x + 1])
-    # Remove all neighbors with negative indices or indices exceeding the total number of nodes
-    # valid_neighbors = neighbors[(neighbors >= 0) & (neighbors < total_number_of_nodes)]
-
-    return valid_neighbors
-
-
-def find_steepest_neighbors(node_index):
-    return None
-
-
 def get_row_and_col_from_index(node_index, number_of_cols):
     """
     Given an index in the 1d-grid, the row number and column coordinates in the 2d-grid is returned
@@ -92,3 +64,21 @@ def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
 
     return node_index
 
+
+def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
+    """
+    Returns the indices of the neighbors of boundary nodes given the node index
+    :param node_index: Index of node
+    :return neighbors: List of neighbor indices
+    """
+
+    r, c = get_row_and_col_from_index(node_index, num_of_nodes_x)
+    neighbors = []
+
+    for l in range(max(0, r-1), min(num_of_nodes_y, (r+1) + 1)):  # Add 1 so range includes r+1
+        for k in range(max(0, c-1), min(num_of_nodes_x, (c+1) + 1)):  # Add 1 so range includes c+1
+            neighbors.append(get_index_from_row_and_col(l, k, num_of_nodes_x))
+
+    neighbors.remove(node_index)
+
+    return neighbors

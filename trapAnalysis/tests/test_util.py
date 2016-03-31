@@ -34,18 +34,6 @@ def test_get_node_index_rectangular():
     assert np.array_equal(indices.flatten(), result_indices)
 
 
-def test_get_node_neighbors():
-
-    num_of_nodes_x = 3
-    num_of_nodes_y = 3
-
-    node_index = 5
-    result_neighbors = [1, 4, 5]
-    neighbors = util.get_node_neighbors(node_index, num_of_nodes_x, num_of_nodes_y)
-
-    assert np.array_equal(neighbors, result_neighbors)
-
-
 def test_get_row_and_col_from_index_wide():
 
     number_of_rows = 2
@@ -55,9 +43,9 @@ def test_get_row_and_col_from_index_wide():
 
     rows_and_cols = []
     for i in range(0, num_of_elements):
-        rows_and_cols.append(util.get_node_row_and_col_from_index(i, number_of_cols))
+        rows_and_cols.append(util.get_row_and_col_from_index(i, number_of_cols))
 
-    assert cmp(result_rows_and_cols, rows_and_cols) == False
+    assert cmp(result_rows_and_cols, rows_and_cols) == 0
 
 
 def test_get_row_and_col_from_index_skinny():
@@ -69,9 +57,9 @@ def test_get_row_and_col_from_index_skinny():
 
     rows_and_cols = []
     for i in range(0, num_of_elements):
-        rows_and_cols.append(util.get_node_row_and_col_from_index(i, number_of_cols))
+        rows_and_cols.append(util.get_row_and_col_from_index(i, number_of_cols))
 
-    assert cmp(result_rows_and_cols, rows_and_cols) == False
+    assert cmp(result_rows_and_cols, rows_and_cols) == 0
 
 
 def test_get_index_from_row_and_col():
@@ -82,6 +70,37 @@ def test_get_index_from_row_and_col():
 
     indices = []
     for row_and_col in rows_and_cols:
-        indices.append(util.get_node_index_from_row_and_col(row_and_col[0], row_and_col[1], number_of_cols))
+        indices.append(util.get_index_from_row_and_col(row_and_col[0], row_and_col[1], number_of_cols))
 
-    assert cmp(indices, result_indices) == False
+    assert cmp(indices, result_indices) == 0
+
+
+def test_get_node_neighbors_boundary_square():
+
+    num_of_nodes_x = 3
+    num_of_nodes_y = 3
+
+    result_neighbors = [[1, 3, 4], [0, 2, 3, 4, 5], [1, 4, 5],
+                        [0, 1, 4, 6, 7], [0, 1, 2, 3, 5, 6, 7, 8], [1, 2, 4, 7, 8],
+                        [3, 4, 7], [3, 4, 5, 6, 8], [4, 5, 7]]
+
+    neighbors = []
+    for i in range(num_of_nodes_x * num_of_nodes_y):
+        neighbors.append(util.get_node_neighbors_boundary(i, num_of_nodes_x, num_of_nodes_y))
+
+    assert cmp(neighbors, result_neighbors) == 0
+
+
+def test_get_node_neighbors_boundary_skinny():
+
+    num_of_nodes_x = 2
+    num_of_nodes_y = 3
+
+    result_neighbors = [[1, 2, 3], [0, 2, 3], [0, 1, 3, 4, 5],
+                        [0, 1, 2, 4, 5], [2, 3, 5], [2, 3, 4]]
+
+    neighbors = []
+    for i in range(num_of_nodes_x * num_of_nodes_y):
+        neighbors.append(util.get_node_neighbors_boundary(i, num_of_nodes_x, num_of_nodes_y))
+
+    assert cmp(neighbors, result_neighbors) == 0
