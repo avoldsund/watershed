@@ -46,7 +46,7 @@ def test_get_node_neighbors():
     assert np.array_equal(neighbors, result_neighbors)
 
 
-def test_get_node_row_and_col_from_index_wide():
+def test_get_row_and_col_from_index_wide():
 
     number_of_rows = 2
     number_of_cols = 3
@@ -60,7 +60,7 @@ def test_get_node_row_and_col_from_index_wide():
     assert cmp(result_rows_and_cols, rows_and_cols) == False
 
 
-def test_get_node_row_and_col_from_index_skinny():
+def test_get_row_and_col_from_index_skinny():
 
     number_of_rows = 3
     number_of_cols = 2
@@ -72,3 +72,16 @@ def test_get_node_row_and_col_from_index_skinny():
         rows_and_cols.append(util.get_node_row_and_col_from_index(i, number_of_cols))
 
     assert cmp(result_rows_and_cols, rows_and_cols) == False
+
+
+def test_get_index_from_row_and_col():
+
+    number_of_cols = 2
+    rows_and_cols = [(0, 0), (0, 1), (1, 0), (1, 1), (2, 0), (2, 1)]
+    result_indices = [0, 1, 2, 3, 4, 5]
+
+    indices = []
+    for row_and_col in rows_and_cols:
+        indices.append(util.get_node_index_from_row_and_col(row_and_col[0], row_and_col[1], number_of_cols))
+
+    assert cmp(indices, result_indices) == False
