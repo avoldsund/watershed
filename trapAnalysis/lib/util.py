@@ -82,3 +82,16 @@ def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
     neighbors.remove(node_index)
 
     return neighbors
+
+
+def is_boundary_node(node_index, num_of_cols, num_of_rows):
+
+    is_top = node_index < num_of_cols
+    is_left = node_index % num_of_cols == 0
+    is_right = (node_index + 1) % num_of_cols == 0
+    is_bottom = ((num_of_cols * num_of_rows - num_of_cols) <= node_index) and (node_index < num_of_cols * num_of_rows)
+
+    print is_top, is_left, is_right, is_bottom
+
+    return is_top or is_left or is_right or is_bottom
+

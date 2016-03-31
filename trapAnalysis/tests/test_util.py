@@ -104,3 +104,55 @@ def test_get_node_neighbors_boundary_skinny():
         neighbors.append(util.get_node_neighbors_boundary(i, num_of_nodes_x, num_of_nodes_y))
 
     assert cmp(neighbors, result_neighbors) == 0
+
+
+def test_is_boundary_node_square():
+
+    num_of_cols = 3
+    num_of_rows = 3
+
+    indices = range(0, num_of_cols * num_of_rows)
+    result_are_boundary_nodes = [True, True, True, True, False, True, True, True, True]
+
+    boundary_nodes = []
+    for index in indices:
+        boundary_nodes.append(util.is_boundary_node(index, num_of_cols, num_of_rows))
+
+    print boundary_nodes
+    assert cmp(boundary_nodes, result_are_boundary_nodes) == 0
+
+
+def test_is_boundary_node_wide():
+
+    num_of_cols = 3
+    num_of_rows = 2
+
+    indices = range(0, num_of_cols * num_of_rows)
+    result_are_boundary_nodes = [True, True, True, True, True, True]
+
+    boundary_nodes = []
+    for index in indices:
+        boundary_nodes.append(util.is_boundary_node(index, num_of_cols, num_of_rows))
+
+    print boundary_nodes
+    assert cmp(boundary_nodes, result_are_boundary_nodes) == 0
+
+
+def test_is_boundary_node_large():
+
+    num_of_cols = 5
+    num_of_rows = 5
+
+    indices = range(0, num_of_cols * num_of_rows)
+    result_are_boundary_nodes = [True, True, True, True, True,
+                                 True, False, False, False, True,
+                                 True, False, False, False, True,
+                                 True, False, False, False, True,
+                                 True, True, True, True, True]
+
+    boundary_nodes = []
+    for index in indices:
+        boundary_nodes.append(util.is_boundary_node(index, num_of_cols, num_of_rows))
+
+    print boundary_nodes
+    assert cmp(boundary_nodes, result_are_boundary_nodes) == 0
