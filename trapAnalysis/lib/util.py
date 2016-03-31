@@ -85,6 +85,15 @@ def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
+def get_node_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
+
+    neighbors = []
+    for index in indices:
+        neighbors.append(get_node_neighbors_boundary(index, num_of_nodes_x, num_of_nodes_y))
+
+    return neighbors
+
+
 def is_boundary_node(node_index, num_of_cols, num_of_rows):
     """
     Returns true if the node is on the boundary, otherwise returns false
@@ -140,3 +149,17 @@ def get_interior_indices(num_of_cols, num_of_rows):
     interior_indices = np.setdiff1d(indices, get_boundary_indices(num_of_cols, num_of_rows))
 
     return interior_indices
+
+
+def get_steepest_neighbors(num_of_cols, num_of_rows, heights):
+
+    boundary_indices = get_boundary_indices(num_of_cols, num_of_rows)
+    neighbors = get_node_neighbors_for_indices(boundary_indices, num_of_cols, num_of_rows)
+    indices_heights = heights[boundary_indices]
+
+    neighbor_heights_diff = []
+    for i in range(len(boundary_indices)):
+        nr_of_neighbors = len(neighbors[i])
+        neighbor_heights_diff.append([k - l for k, l in zip([indices_heights[i]] * nr_of_neighbors, heights[neighbors[i]])])
+
+
