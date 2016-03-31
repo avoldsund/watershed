@@ -13,6 +13,7 @@ class Landscape:
         self.y_min = self.y_max + geo_transform[5] * (self.num_of_nodes_y - 1)
         self.total_number_of_nodes = nx * ny
         self.coordinates = np.empty((self.total_number_of_nodes, 3))
+        self.steepest_neighbor = np.empty(self.total_number_of_nodes)
 
         step_size_x = geo_transform[1]
         step_size_y = geo_transform[5]
@@ -85,13 +86,43 @@ def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
 
 
 def is_boundary_node(node_index, num_of_cols, num_of_rows):
+    """
+    Returns true if the node is on the boundary, otherwise returns false
+    :param node_index: Index of node in 1d-array
+    :param num_of_cols: Number of columns in 2d-grid
+    :param num_of_rows: Number of rows in 2d-grid
+    :return is_boundary: True if node is a boundary point, otherwise false
+    """
 
     is_top = node_index < num_of_cols
     is_left = node_index % num_of_cols == 0
     is_right = (node_index + 1) % num_of_cols == 0
     is_bottom = ((num_of_cols * num_of_rows - num_of_cols) <= node_index) and (node_index < num_of_cols * num_of_rows)
 
-    print is_top, is_left, is_right, is_bottom
+    is_boundary = is_top or is_left or is_right or is_bottom
 
-    return is_top or is_left or is_right or is_bottom
+    return is_boundary
 
+
+def get_boundary_node_indices(num_of_cols, num_of_rows):
+    """
+    Returns an array of all indices in the 1d-array that are boundary nodes
+    :param num_of_cols: Number of columns in the 2d-grid
+    :param num_of_rows: Number of rows in the 2d-grid
+    :return boundary_indices: Array of boundary indices
+    """
+
+    number_of_boundary_nodes = 2 * num_of_cols + 2 * num_of_rows - 4
+    boundary_indices = np.empty(number_of_boundary_nodes)
+
+    top = np.arange(0, num_of_cols, 1)
+    bottom = np.arange(num_of_cols * num_of_rows - num_of_cols, num_of_cols * num_of_rows, 1)
+    left = np.arange(num_of_cols, num_of_cols * num_of_rows - num_of_cols, num_of_cols)
+    right = np.arange(2 * num_of_cols - 1, num_of_cols * num_of_rows - 1, num_of_cols)
+
+    boundary_indices[0: num_of_cols] = top
+    boundary_indices[num_of_cols: 2*num_of_cols] = bottom
+    boundary_indices[2 * num_of_cols: 3 * num_of_cols - 2] = left
+    boundary_indices[3 * num_of_cols - 2: 4 * num_of_cols - 2] = right
+
+    return boundary_indices

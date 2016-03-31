@@ -156,3 +156,14 @@ def test_is_boundary_node_large():
 
     print boundary_nodes
     assert cmp(boundary_nodes, result_are_boundary_nodes) == 0
+
+
+def test_get_boundary_node_indices():
+
+    num_of_cols = 4001
+    num_of_rows = 4001
+    result_boundary_indices = np.array([0, 1, 2, 6, 7, 8, 3, 5])
+
+    boundary_indices = util.get_boundary_node_indices(num_of_cols, num_of_rows)
+
+    assert np.array_equal(boundary_indices, result_boundary_indices)
