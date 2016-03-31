@@ -45,13 +45,19 @@ def find_steepest_neighbors(node_index):
     return None
 
 
-def get_node_row_and_col_from_index(node_index, num_of_nodes_x, num_of_nodes_y):
+def get_node_row_and_col_from_index(node_index, number_of_cols):
+    """
+    Given an index in the 1d-grid, the row number and column coordinates in the 2d-grid is returned
+    :param node_index: Index of node in 1d-grid
+    :param number_of_cols: Number of columns in the 2d-grid
+    :return coordinates: The coordinates of the node with index node_index in the 2d-grid, (r, c)
+    """
 
-    row_number = node_index/num_of_nodes_y
-    col_number = node_index % num_of_nodes_x
-    coordinates = (row_number, col_number)
+    r = node_index/number_of_cols
+    c = node_index % number_of_cols
+    row_col = (r, c)
 
-    return coordinates
+    return row_col
 
 
 def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
