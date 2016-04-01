@@ -85,6 +85,24 @@ def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
+def get_node_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y):
+    """
+    NOTE: This is returning the neighbors for all indices as 2d-array
+    :param indices:
+    :param num_of_nodes_x:
+    :param num_of_nodes_y:
+    :return:
+    """
+    neighbors = np.empty(len(indices), dtype=object)
+
+    counter = 0
+    for index in indices:
+        neighbors[counter] = get_node_neighbors_boundary_array(index, num_of_nodes_x, num_of_nodes_y)
+        counter += 1
+
+    return neighbors
+
+
 def get_node_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
 
     neighbors = []
@@ -122,7 +140,7 @@ def get_boundary_indices(num_of_cols, num_of_rows):
     """
 
     number_of_boundary_nodes = 2 * num_of_cols + 2 * num_of_rows - 4
-    boundary_indices = np.empty(number_of_boundary_nodes)
+    boundary_indices = np.empty(number_of_boundary_nodes, dtype=int)
 
     top = np.arange(0, num_of_cols, 1)
     bottom = np.arange(num_of_cols * num_of_rows - num_of_cols, num_of_cols * num_of_rows, 1)
@@ -154,12 +172,41 @@ def get_interior_indices(num_of_cols, num_of_rows):
 def get_steepest_neighbors(num_of_cols, num_of_rows, heights):
 
     boundary_indices = get_boundary_indices(num_of_cols, num_of_rows)
-    neighbors = get_node_neighbors_for_indices(boundary_indices, num_of_cols, num_of_rows)
-    indices_heights = heights[boundary_indices]
+    all_neighbors = get_node_neighbors_for_indices(boundary_indices, num_of_cols, num_of_rows)
+    heights_indices = heights[boundary_indices]
+    indices_with_largest_derivative = np.empty(len(boundary_indices), dtype=int)
 
-    neighbor_heights_diff = []
     for i in range(len(boundary_indices)):
-        nr_of_neighbors = len(neighbors[i])
-        neighbor_heights_diff.append([k - l for k, l in zip([indices_heights[i]] * nr_of_neighbors, heights[neighbors[i]])])
+        neighbors = np.asarray(all_neighbors[i])
+        index_height_vec = np.array([heights_indices[i]] * len(neighbors))
+        heights_of_neighbors = heights[neighbors]
+
+        diff = index_height_vec - heights_of_neighbors
+        index_steepest = -1
+        if np.amax(diff) > 0:
+            index_steepest = neighbors[np.argmax(diff)]
+        indices_with_largest_derivative[i] = index_steepest
+
+    return indices_with_largest_derivative
 
 
+def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
+
+    interior_indices = get_interior_indices(num_of_cols, num_of_rows)
+    all_neighbors = get_node_neighbors_for_indices(interior_indices, num_of_cols, num_of_rows)
+    heights_indices = heights[interior_indices]
+    indices_with_largest_derivative = np.empty(len(interior_indices), dtype=int)
+
+    for i in range(len(interior_indices)):
+        print i
+        neighbors = np.asarray(all_neighbors[i])
+        index_height_vec = np.array([heights_indices[i]] * len(neighbors))
+        heights_of_neighbors = heights[neighbors]
+
+        diff = index_height_vec - heights_of_neighbors
+        index_steepest = -1
+        if np.amax(diff) > 0:
+            index_steepest = neighbors[np.argmax(diff)]
+        indices_with_largest_derivative[i] = index_steepest
+
+    return indices_with_largest_derivative

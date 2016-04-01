@@ -178,3 +178,17 @@ def test_get_interior_indices():
     interior_indices = util.get_interior_indices(num_of_cols, num_of_rows)
 
     assert np.array_equal(interior_indices, result_interior_indices)
+
+
+def test_get_steepest_neighbors():
+
+    num_of_cols = 3
+    num_of_rows = 3
+    heights = np.array([35, 15, 62, 14, 19, 101, 2, 27, 18])
+    result_indices = np.array([3, 3, 1, -1, 6, -1, 6, 1])
+
+    indices = util.get_steepest_neighbors(num_of_cols, num_of_rows, heights)
+
+    assert np.array_equal(indices, result_indices)
+
+
