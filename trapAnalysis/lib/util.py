@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 
 class Landscape:
@@ -210,3 +211,43 @@ def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
         indices_with_largest_derivative[i] = index_steepest
 
     return indices_with_largest_derivative
+
+
+def get_neighbors_interior(num_of_cols, num_of_rows):
+    """
+    Returns the neighbors of the interior nodes
+    :param num_of_cols:
+    :param num_of_rows:
+    :return:
+    """
+
+    indices = get_interior_indices(num_of_cols, num_of_rows)
+    nr_of_nodes = len(indices)
+    neighbors = np.empty((nr_of_nodes, 8), dtype=int)
+    one_array = np.ones(nr_of_nodes)
+    n_array = one_array * num_of_cols
+
+    neighbors[:, 0] = indices - n_array - one_array
+    neighbors[:, 1] = indices - n_array
+    neighbors[:, 2] = indices - n_array + one_array
+    neighbors[:, 3] = indices - one_array
+    neighbors[:, 4] = indices + one_array
+    neighbors[:, 5] = indices + n_array - one_array
+    neighbors[:, 6] = indices + n_array
+    neighbors[:, 7] = indices + n_array + one_array
+
+    return indices, neighbors
+
+
+def get_steepest_neighbors_interior_improved(num_of_cols, num_of_rows, heights):
+
+    indices, neighbors = get_neighbors_interior(num_of_cols, num_of_rows)
+    heights_array = np.transpose(np.tile(heights[indices], (8, 1)))
+
+    delta_z = heights_array - heights[neighbors]
+    delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(10)])
+    derivatives = np.divide(delta_z, delta_x)
+    indices_of_steepest = derivatives.argmax(axis=1)
+    steepest_neighbors = np.choose(indices_of_steepest, neighbors.T)
+
+    return steepest_neighbors

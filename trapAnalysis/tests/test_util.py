@@ -192,3 +192,44 @@ def test_get_steepest_neighbors():
     assert np.array_equal(indices, result_indices)
 
 
+def test_get_neighbors_interior():
+
+    num_of_cols = 5
+    num_of_rows = 5
+    result_neighbors = np.array([[0, 1, 2, 5, 7, 10, 11, 12],
+                                [1, 2, 3, 6, 8, 11, 12, 13],
+                                [2, 3, 4, 7, 9, 12, 13, 14],
+                                [5, 6, 7, 10, 12, 15, 16, 17],
+                                [6, 7, 8, 11, 13, 16, 17, 18],
+                                [7, 8, 9, 12, 14, 17, 18, 19],
+                                [10, 11, 12, 15, 17, 20, 21, 22],
+                                [11, 12, 13, 16, 18, 21, 22, 23],
+                                [12, 13, 14, 17, 19, 22, 23, 24]], dtype=int)
+
+    indices, neighbors = util.get_neighbors_interior(num_of_cols, num_of_rows)
+
+    assert np.array_equal(neighbors, result_neighbors)
+
+
+def test_get_steepest_neighbors_interior_improved():
+
+    num_of_cols = 5
+    num_of_rows = 5
+    indices = np.array([6, 7, 8, 11, 12, 13, 16, 17, 18])
+    neighbors = np.array([[0, 1, 2, 5, 7, 10, 11, 12],
+                          [1, 2, 3, 6, 8, 11, 12, 13],
+                          [2, 3, 4, 7, 9, 12, 13, 14],
+                          [5, 6, 7, 10, 12, 15, 16, 17],
+                          [6, 7, 8, 11, 13, 16, 17, 18],
+                          [7, 8, 9, 12, 14, 17, 18, 19],
+                          [10, 11, 12, 15, 17, 20, 21, 22],
+                          [11, 12, 13, 16, 18, 21, 22, 23],
+                          [12, 13, 14, 17, 19, 22, 23, 24]])
+    heights = np.array([35, 15, 62, 29, 48, 14, 19, 101, 61, 27,
+                        2, 27, 18, 149, 20, 31, 33, 36, 24, 22,
+                        91, 93, 92, 21, 34])
+
+    result_steepest_neighbors = np.array([10, 1, 12, 10, 6, 12, 10, 12, 12])
+    steepest_neighbors = util.get_steepest_neighbors_interior_improved(num_of_cols, num_of_rows, heights)
+
+    assert np.array_equal(steepest_neighbors, result_steepest_neighbors)
