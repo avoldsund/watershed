@@ -245,8 +245,9 @@ def get_steepest_neighbors_interior_improved(num_of_cols, num_of_rows, heights):
     heights_array = np.transpose(np.tile(heights[indices], (8, 1)))
 
     delta_z = heights_array - heights[neighbors]
-    delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(10)])
+    delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(200)])
     derivatives = np.divide(delta_z, delta_x)
+
     indices_of_steepest = derivatives.argmax(axis=1)
     steepest_neighbors = np.choose(indices_of_steepest, neighbors.T)
 

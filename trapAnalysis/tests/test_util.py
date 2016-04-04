@@ -229,7 +229,7 @@ def test_get_steepest_neighbors_interior_improved():
                         2, 27, 18, 149, 20, 31, 33, 36, 24, 22,
                         91, 93, 92, 21, 34])
 
-    result_steepest_neighbors = np.array([10, 1, 12, 10, 6, 12, 10, 12, 12])
+    result_steepest_neighbors = np.array([10, 12, 9, 10, -1, 12, 10, 12, 12])
     steepest_neighbors = util.get_steepest_neighbors_interior_improved(num_of_cols, num_of_rows, heights)
 
     assert np.array_equal(steepest_neighbors, result_steepest_neighbors)
