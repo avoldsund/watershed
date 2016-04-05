@@ -170,7 +170,7 @@ def get_interior_indices(num_of_cols, num_of_rows):
     return interior_indices
 
 
-def get_steepest_neighbors(num_of_cols, num_of_rows, heights):
+def get_steepest_neighbors_boundary(num_of_cols, num_of_rows, heights):
     """
     Returns the indices of the neighbors with the largest derivative for each node
     :param num_of_cols: Number of nodes in the x-direction
@@ -239,6 +239,7 @@ def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
     delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(200)])
     derivatives = np.divide(delta_z, delta_x)
 
+    # Get all indices of the maximum derivatives for each node
     indices_of_steepest = derivatives.argmax(axis=1)
 
     # Change the indices of nodes that are local minimums
@@ -254,3 +255,22 @@ def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
     return indices_of_steepest_neighbors
 
 
+def get_steepest_neighbors(num_of_cols, num_of_rows, heights):
+    """
+    Returns the downslope neighbors for both interior and boundary nodes
+    :param num_of_cols: Number of nodes is x-direction
+    :param num_of_rows: Number of nodes in y-direction
+    :param heights: Heighs of all nodes
+    :return downslope_neighbors: Indices of all downslope neighbors for each node. Equal to -1 if the node is a minimum.
+    """
+
+    boundary_indices = get_boundary_indices(num_of_cols, num_of_rows)
+    interior_indices = get_interior_indices(num_of_cols, num_of_rows)
+
+    indices = np.concatenate((boundary_indices, interior_indices))
+
+    downslope_neighbors_boundary = get_steepest_neighbors_boundary(num_of_cols, num_of_rows, heights)
+    downslope_neighbors_interior = get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights)
+    downslope_neighbors = np.concatenate((downslope_neighbors_boundary, downslope_neighbors_interior))
+
+    return downslope_neighbors
