@@ -211,7 +211,7 @@ def test_get_neighbors_interior():
     assert np.array_equal(neighbors, result_neighbors)
 
 
-def test_get_steepest_neighbors_interior_improved():
+def test_get_steepest_neighbors_interior():
 
     num_of_cols = 5
     num_of_rows = 5
@@ -230,6 +230,6 @@ def test_get_steepest_neighbors_interior_improved():
                         91, 93, 92, 21, 34])
 
     result_steepest_neighbors = np.array([10, 12, 9, 10, -1, 12, 10, 12, 12])
-    steepest_neighbors = util.get_steepest_neighbors_interior_improved(num_of_cols, num_of_rows, heights)
+    steepest_neighbors = util.get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights)
 
     assert np.array_equal(steepest_neighbors, result_steepest_neighbors)

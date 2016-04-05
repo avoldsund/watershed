@@ -98,7 +98,7 @@ def get_node_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y
 
     counter = 0
     for index in indices:
-        neighbors[counter] = get_node_neighbors_boundary_array(index, num_of_nodes_x, num_of_nodes_y)
+        neighbors[counter] = get_node_neighbors_boundary(index, num_of_nodes_x, num_of_nodes_y)
         counter += 1
 
     return neighbors
@@ -171,35 +171,19 @@ def get_interior_indices(num_of_cols, num_of_rows):
 
 
 def get_steepest_neighbors(num_of_cols, num_of_rows, heights):
-
+    """
+    Returns the indices of the neighbors with the largest derivative for each node
+    :param num_of_cols: Number of nodes in the x-direction
+    :param num_of_rows: Number of nodes in the y-direction
+    :param heights: Heights of all nodes
+    :return indices_with_largest_derivative: The indices of the neighbors with the largest derivatives for each node
+    """
     boundary_indices = get_boundary_indices(num_of_cols, num_of_rows)
     all_neighbors = get_node_neighbors_for_indices(boundary_indices, num_of_cols, num_of_rows)
     heights_indices = heights[boundary_indices]
     indices_with_largest_derivative = np.empty(len(boundary_indices), dtype=int)
 
     for i in range(len(boundary_indices)):
-        neighbors = np.asarray(all_neighbors[i])
-        index_height_vec = np.array([heights_indices[i]] * len(neighbors))
-        heights_of_neighbors = heights[neighbors]
-
-        diff = index_height_vec - heights_of_neighbors
-        index_steepest = -1
-        if np.amax(diff) > 0:
-            index_steepest = neighbors[np.argmax(diff)]
-        indices_with_largest_derivative[i] = index_steepest
-
-    return indices_with_largest_derivative
-
-
-def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
-
-    interior_indices = get_interior_indices(num_of_cols, num_of_rows)
-    all_neighbors = get_node_neighbors_for_indices(interior_indices, num_of_cols, num_of_rows)
-    heights_indices = heights[interior_indices]
-    indices_with_largest_derivative = np.empty(len(interior_indices), dtype=int)
-
-    for i in range(len(interior_indices)):
-        print i
         neighbors = np.asarray(all_neighbors[i])
         index_height_vec = np.array([heights_indices[i]] * len(neighbors))
         heights_of_neighbors = heights[neighbors]
@@ -239,21 +223,34 @@ def get_neighbors_interior(num_of_cols, num_of_rows):
     return indices, neighbors
 
 
-def get_steepest_neighbors_interior_improved(num_of_cols, num_of_rows, heights):
-
+def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
+    """
+    Returns the indices of all neighbors with steepest derivatives
+    :param num_of_cols: Number of nodes in x-direction
+    :param num_of_rows: Number of nodes in y-direction
+    :param heights: The heights of all nodes
+    :return indices_of_steepest_neighbors: The index of the steepest neighbor for each node
+    """
     indices, neighbors = get_neighbors_interior(num_of_cols, num_of_rows)
-    heights_array = np.transpose(np.tile(heights[indices], (8, 1)))
+    heights_of_indices = np.transpose(np.tile(heights[indices], (8, 1)))
 
-    delta_z = heights_array - heights[neighbors]
+    # Calculating the derivatives of all neighbors
+    delta_z = heights_of_indices - heights[neighbors]
     delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(200)])
     derivatives = np.divide(delta_z, delta_x)
-    print 'derivatives: ', derivatives
+
     indices_of_steepest = derivatives.argmax(axis=1)
-    print 'indices of steepest: ', indices_of_steepest
-    is_minimum = derivatives[indices_of_steepest] < 0
-    print 'is minimum: ', is_minimum
 
-    steepest_neighbors = np.choose(indices_of_steepest, neighbors.T)
-    steepest_neighbors[is_minimum] = -1
+    # Change the indices of nodes that are local minimums
+    flat_derivatives = derivatives.flatten()
+    col_multiplier = np.arange(0, len(indices), 1) * 8
+    indices_in_flat = col_multiplier + indices_of_steepest
+    is_minimum = flat_derivatives[indices_in_flat] < 0
 
-    return steepest_neighbors
+    # Setting all local minimum indices to -1
+    indices_of_steepest_neighbors = np.choose(indices_of_steepest, neighbors.T)
+    indices_of_steepest_neighbors[is_minimum] = -1
+
+    return indices_of_steepest_neighbors
+
+
