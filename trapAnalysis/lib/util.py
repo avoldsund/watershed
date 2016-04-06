@@ -23,6 +23,7 @@ class Landscape:
             print 'The step size in the x- and y-direction is not equal'
             return
         self.step_size = step_size_x
+        self.downslope_neighbors = None
 
 
 def get_row_and_col_from_index(node_index, number_of_cols):
@@ -170,7 +171,7 @@ def get_interior_indices(num_of_cols, num_of_rows):
     return interior_indices
 
 
-def get_steepest_neighbors_boundary(num_of_cols, num_of_rows, heights):
+def get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights):
     """
     Returns the indices of the neighbors with the largest derivative for each node
     :param num_of_cols: Number of nodes in the x-direction
@@ -181,7 +182,7 @@ def get_steepest_neighbors_boundary(num_of_cols, num_of_rows, heights):
     boundary_indices = get_boundary_indices(num_of_cols, num_of_rows)
     all_neighbors = get_node_neighbors_for_indices(boundary_indices, num_of_cols, num_of_rows)
     heights_indices = heights[boundary_indices]
-    indices_with_largest_derivative = np.empty(len(boundary_indices), dtype=int)
+    indices_downslope_neighbors = np.empty(len(boundary_indices), dtype=int)
 
     for i in range(len(boundary_indices)):
         neighbors = np.asarray(all_neighbors[i])
@@ -192,9 +193,9 @@ def get_steepest_neighbors_boundary(num_of_cols, num_of_rows, heights):
         index_steepest = -1
         if np.amax(diff) > 0:
             index_steepest = neighbors[np.argmax(diff)]
-        indices_with_largest_derivative[i] = index_steepest
+        indices_downslope_neighbors[i] = index_steepest
 
-    return indices_with_largest_derivative
+    return indices_downslope_neighbors
 
 
 def get_neighbors_interior(num_of_cols, num_of_rows):
@@ -223,7 +224,7 @@ def get_neighbors_interior(num_of_cols, num_of_rows):
     return indices, neighbors
 
 
-def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
+def get_downslope_neighbors_interior(num_of_cols, num_of_rows, heights):
     """
     Returns the indices of all neighbors with steepest derivatives
     :param num_of_cols: Number of nodes in x-direction
@@ -249,15 +250,15 @@ def get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights):
     is_minimum = flat_derivatives[indices_in_flat] < 0
 
     # Setting all local minimum indices to -1
-    indices_of_steepest_neighbors = np.choose(indices_of_steepest, neighbors.T)
-    indices_of_steepest_neighbors[is_minimum] = -1
+    indices_downslope_neighbors = np.choose(indices_of_steepest, neighbors.T)
+    indices_downslope_neighbors[is_minimum] = -1
 
-    return indices_of_steepest_neighbors
+    return indices_downslope_neighbors
 
 
-def get_steepest_neighbors(num_of_cols, num_of_rows, heights):
+def get_downslope_neighbors(num_of_cols, num_of_rows, heights):
     """
-    Returns the downslope neighbors for both interior and boundary nodes
+    Returns the downslope neighbors for all indices
     :param num_of_cols: Number of nodes is x-direction
     :param num_of_rows: Number of nodes in y-direction
     :param heights: Heighs of all nodes
@@ -269,8 +270,13 @@ def get_steepest_neighbors(num_of_cols, num_of_rows, heights):
 
     indices = np.concatenate((boundary_indices, interior_indices))
 
-    downslope_neighbors_boundary = get_steepest_neighbors_boundary(num_of_cols, num_of_rows, heights)
-    downslope_neighbors_interior = get_steepest_neighbors_interior(num_of_cols, num_of_rows, heights)
+    downslope_neighbors_boundary = get_downslope_neighbors(num_of_cols, num_of_rows, heights)
+    downslope_neighbors_interior = get_downslope_neighbors_interior(num_of_cols, num_of_rows, heights)
     downslope_neighbors = np.concatenate((downslope_neighbors_boundary, downslope_neighbors_interior))
+
+    # Change the order such that we get the downslope neighbors for index 0 to (nx x ny) chronologically
+    downslope_neighbors = np.column_stack((indices, downslope_neighbors))
+    downslope_neighbors = downslope_neighbors[np.argsort(downslope_neighbors[:, 0])]
+
 
     return downslope_neighbors
