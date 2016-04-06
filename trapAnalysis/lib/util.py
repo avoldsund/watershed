@@ -2,30 +2,6 @@ import numpy as np
 import math
 
 
-class Landscape:
-
-    def __init__(self, geo_transform, nx, ny):
-
-        self.num_of_nodes_x = nx
-        self.num_of_nodes_y = ny
-        self.x_min = geo_transform[0]
-        self.y_max = geo_transform[3]
-        self.x_max = self.x_min + geo_transform[1] * (self.num_of_nodes_x - 1)
-        self.y_min = self.y_max + geo_transform[5] * (self.num_of_nodes_y - 1)
-        self.total_number_of_nodes = nx * ny
-        self.coordinates = np.empty((self.total_number_of_nodes, 3))
-        self.steepest_neighbor = np.empty(self.total_number_of_nodes)
-
-        step_size_x = geo_transform[1]
-        step_size_y = geo_transform[5]
-        unequal_step_size = (abs(step_size_x) != abs(step_size_y))
-        if unequal_step_size:
-            print 'The step size in the x- and y-direction is not equal'
-            return
-        self.step_size = step_size_x
-        self.downslope_neighbors = None
-
-
 def get_row_and_col_from_index(node_index, number_of_cols):
     """
     Given an index in the 1d-grid, the row number and column coordinates in the 2d-grid is returned
@@ -270,13 +246,12 @@ def get_downslope_neighbors(num_of_cols, num_of_rows, heights):
 
     indices = np.concatenate((boundary_indices, interior_indices))
 
-    downslope_neighbors_boundary = get_downslope_neighbors(num_of_cols, num_of_rows, heights)
+    downslope_neighbors_boundary = get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights)
     downslope_neighbors_interior = get_downslope_neighbors_interior(num_of_cols, num_of_rows, heights)
     downslope_neighbors = np.concatenate((downslope_neighbors_boundary, downslope_neighbors_interior))
 
     # Change the order such that we get the downslope neighbors for index 0 to (nx x ny) chronologically
     downslope_neighbors = np.column_stack((indices, downslope_neighbors))
-    downslope_neighbors = downslope_neighbors[np.argsort(downslope_neighbors[:, 0])]
-
+    downslope_neighbors = downslope_neighbors[np.argsort(downslope_neighbors[:, 0])][:, 1]
 
     return downslope_neighbors
