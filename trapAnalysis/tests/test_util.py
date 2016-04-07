@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
 import util
 import numpy as np
+import math
 
 
 def test_get_node_index_square():
@@ -158,11 +159,22 @@ def test_is_boundary_node_large():
     assert cmp(boundary_nodes, result_are_boundary_nodes) == 0
 
 
-def test_get_boundary_indices():
+def test_get_boundary_indices_square():
 
     num_of_cols = 3
     num_of_rows = 3
-    result_boundary_indices = np.array([0, 1, 2, 6, 7, 8, 3, 5])
+    result_boundary_indices = np.array([0, 1, 2, 3, 5, 6, 7, 8])
+
+    boundary_indices = util.get_boundary_indices(num_of_cols, num_of_rows)
+
+    assert np.array_equal(boundary_indices, result_boundary_indices)
+
+
+def test_get_boundary_indices_rectangular():
+
+    num_of_cols = 4
+    num_of_rows = 3
+    result_boundary_indices = np.array([0, 1, 2, 3, 4, 7, 8, 9, 10, 11])
 
     boundary_indices = util.get_boundary_indices(num_of_cols, num_of_rows)
 
@@ -180,16 +192,16 @@ def test_get_interior_indices():
     assert np.array_equal(interior_indices, result_interior_indices)
 
 
-def test_get_steepest_neighbors_boundary():
-
-    num_of_cols = 3
-    num_of_rows = 3
-    heights = np.array([35, 15, 62, 14, 19, 101, 2, 27, 18])
-    result_indices = np.array([3, 3, 1, -1, 6, -1, 6, 1])
-
-    indices = util.get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights)
-
-    assert np.array_equal(indices, result_indices)
+#def test_get_downslope_neighbors_boundary():
+#
+#    num_of_cols = 3
+#    num_of_rows = 3
+#    heights = np.array([35, 15, 62, 14, 19, 101, 2, 27, 18])
+#    result_indices = np.array([3, 3, 1, 6, 6, 8, -1, 6, 8])
+#
+#    indices = util.get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights)
+#
+#    assert np.array_equal(indices, result_indices)
 
 
 def test_get_neighbors_interior():
@@ -234,6 +246,45 @@ def test_get_downslope_neighbors_interior():
 
     assert np.array_equal(steepest_neighbors, result_steepest_neighbors)
 
+
+def test_get_downslope_indices_corners():
+
+    num_of_cols = 3
+    num_of_rows = 3
+    heights = np.array([35, 15, 62, 14, 19, 101, 2, 27, 18])
+    # result_corners_downslope = np.array([3, 3, 1, 6, 6, 8, -1, 6, -1])
+    result_corners_downslope = np.array([[0, 3], [2, 1], [6, -1], [8, -1]])
+
+    corners_downslope = util.get_downslope_indices_corners(num_of_cols, num_of_rows, heights)
+
+    assert np.array_equal(corners_downslope, result_corners_downslope)
+
+
+def test_get_downslope_indices_sides():
+
+    num_of_cols = 3
+    num_of_rows = 3
+    indices = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8])
+    heights = np.array([35, 15, 62, 14, 19, 101, 2, 27, 18])
+    # result_corners_downslope = np.array([3, 3, 1, 6, 6, 8, -1, 6, -1])
+    result_sides_downslope = np.array([[1, 3], [3, 6], [5, 8], [7, 6]])
+
+    sides_downslope = util.get_downslope_indices_sides(num_of_cols, num_of_rows, heights)
+
+    assert np.array_equal(sides_downslope, result_sides_downslope)
+
+
+def test_get_downslope_neighbors_boundary():
+
+    num_of_cols = 3
+    num_of_rows = 3
+    heights = np.array([35, 15, 62, 14, 19, 101, 2, 27, 18])
+
+    result_downslope = np.array([[0, 3], [1, 3], [2, 1], [3, 6], [5, 8], [6, -1], [7, 6], [8, -1]])
+
+    downslope = util.get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights)
+
+    assert np.array_equal(downslope, result_downslope)
 
 """
 def test_get_downslope_neighbors():

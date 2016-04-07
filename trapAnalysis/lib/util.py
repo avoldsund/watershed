@@ -62,15 +62,14 @@ def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
 
     return neighbors
 
-
+"""
 def get_node_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y):
-    """
     NOTE: This is returning the neighbors for all indices as 2d-array
     :param indices:
     :param num_of_nodes_x:
     :param num_of_nodes_y:
     :return:
-    """
+
     neighbors = np.empty(len(indices), dtype=object)
 
     counter = 0
@@ -79,7 +78,7 @@ def get_node_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y
         counter += 1
 
     return neighbors
-
+"""
 
 def get_node_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
 
@@ -117,18 +116,13 @@ def get_boundary_indices(num_of_cols, num_of_rows):
     :return boundary_indices: Array of boundary indices
     """
 
-    number_of_boundary_nodes = 2 * num_of_cols + 2 * num_of_rows - 4
-    boundary_indices = np.empty(number_of_boundary_nodes, dtype=int)
-
     top = np.arange(0, num_of_cols, 1)
     bottom = np.arange(num_of_cols * num_of_rows - num_of_cols, num_of_cols * num_of_rows, 1)
     left = np.arange(num_of_cols, num_of_cols * num_of_rows - num_of_cols, num_of_cols)
     right = np.arange(2 * num_of_cols - 1, num_of_cols * num_of_rows - 1, num_of_cols)
 
-    boundary_indices[0: num_of_cols] = top
-    boundary_indices[num_of_cols: 2*num_of_cols] = bottom
-    boundary_indices[2 * num_of_cols: 3 * num_of_cols - 2] = left
-    boundary_indices[3 * num_of_cols - 2: 4 * num_of_cols - 2] = right
+    boundary_indices = np.concatenate((top, bottom, left, right))
+    boundary_indices.sort()
 
     return boundary_indices
 
@@ -147,31 +141,118 @@ def get_interior_indices(num_of_cols, num_of_rows):
     return interior_indices
 
 
+"""def get_downslope_neighbors_special_distances(indices, num_of_cols, num_of_rows, dist_to_neighbors, heights)
+
+    neighbors = get_node_neighbors_for_indices(indices, num_of_cols, num_of_rows)
+    delta_z = np.transpose(np.tile(heights[indices], (len(dist_to_neighbors), 1))) - heights[neighbors]
+    derivatives = np.divide(delta_z, dist_to_neighbors)
+    downslope_indices = derivatives.argmax(axis=1)
+    flat_derivatives = derivatives.flatten()
+
+    col_multiplier = np.arange(0, len(indices), 1) * 8
+    indices_in_flat = col_multiplier + downslope_indices
+    is_minimum = flat_derivatives[indices_in_flat] < 0
+    indices_downslope_neighbors = np.choose(downslope_indices, neighbors.T)
+    indices_downslope_neighbors[is_minimum] = -1
+
+    return indices_downslope_neighbors
+
+"""
+
+def get_downslope_indices_corners(num_of_cols, num_of_rows, heights):
+    """
+    Returns the indices of the downslope neighbors for all corners in the grid
+    :param num_of_cols: Number of nodes in the x-direction
+    :param num_of_rows: Number of nodes in the y-direction
+    :param heights: Heights of all points in the grid
+    :return indices_downslope_neighbors: Indices of the downslope neighbors for the corners
+    """
+
+    total_nodes = num_of_cols * num_of_rows
+    corners = np.array([0, num_of_cols - 1, total_nodes - num_of_cols, total_nodes - 1])
+    corner_neighbors = np.array(get_node_neighbors_for_indices(corners, num_of_cols, num_of_rows))
+    corners_dist_to_neighbors = np.array([[10, 10, math.sqrt(200)],
+                                          [10, math.sqrt(200), 10],
+                                          [10, math.sqrt(200), 10],
+                                          [math.sqrt(200), 10, 10]])
+    corners_delta_z = np.transpose(np.tile(heights[corners], (3, 1))) - heights[corner_neighbors]
+
+    corners_derivatives = np.divide(corners_delta_z, corners_dist_to_neighbors)
+    corners_downslope = corners_derivatives.argmax(axis=1)
+    flat_corners_derivatives = corners_derivatives.flatten()
+    col_multiplier = np.arange(0, len(corners), 1) * 3
+    indices_in_flat = col_multiplier + corners_downslope
+    is_minimum = flat_corners_derivatives[indices_in_flat] < 0
+    indices_downslope_neighbors = np.choose(corners_downslope, corner_neighbors.T)
+    indices_downslope_neighbors[is_minimum] = -1
+    indices_downslope_neighbors = np.column_stack((corners, indices_downslope_neighbors))
+
+    return indices_downslope_neighbors
+
+
+def get_downslope_indices_sides(num_of_cols, num_of_rows, heights):
+    """
+    Returns a 2d-array where the first column is the node indices, and the second one is the downslope neighbor
+    :param num_of_cols: Number of nodes in the x-direction
+    :param num_of_rows: Number of nodes in the y-direction
+    :param heights: The heights of all nodes
+    :return downslope_neighbors: Indices of the downslope neighbor for the nodes
+    """
+
+    total_nodes = num_of_cols * num_of_rows
+
+    top = np.arange(1, num_of_cols - 1, 1)
+    bottom = np.arange(total_nodes - num_of_cols + 1, total_nodes - 1, 1)
+    left = np.arange(num_of_cols, total_nodes - num_of_cols, num_of_cols)
+    right = np.arange(2 * num_of_cols - 1, num_of_cols * num_of_rows - 1, num_of_cols)
+    indices = np.concatenate((top, bottom, left, right))
+
+    neighbors = np.array(get_node_neighbors_for_indices(indices, num_of_cols, num_of_rows))
+
+    dist_to_neighbors_top = np.array([10, 10, math.sqrt(200), 10, math.sqrt(200)])
+    dist_to_neighbors_bottom = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10])
+    dist_to_neighbors_left = np.array([10, math.sqrt(200), 10, 10, math.sqrt(200)])
+    dist_to_neighbors_right = np.array([math.sqrt(200), 10, 10, math.sqrt(200), 10])
+    distance_top = np.tile(dist_to_neighbors_top, (len(top), 1))
+    distance_bottom = np.tile(dist_to_neighbors_bottom, (len(bottom), 1))
+    distance_left = np.tile(dist_to_neighbors_left, (len(left), 1))
+    distance_right = np.tile(dist_to_neighbors_right, (len(right), 1))
+    dist_to_neighbors = np.concatenate((distance_top, distance_bottom, distance_left, distance_right))
+
+    delta_z = np.transpose(np.tile(heights[indices], (5, 1))) - heights[neighbors]
+    derivatives = np.divide(delta_z, dist_to_neighbors)
+
+    downslope_indices = derivatives.argmax(axis=1)
+    flat_derivatives = derivatives.flatten()
+    col_multiplier = np.arange(0, len(indices), 1) * 5
+    indices_in_flat = col_multiplier + downslope_indices
+    is_minimum = flat_derivatives[indices_in_flat] < 0
+
+    downslope_neighbors = np.choose(downslope_indices, neighbors.T)
+    downslope_neighbors[is_minimum] = -1
+    downslope_neighbors = np.column_stack((indices, downslope_neighbors))
+
+    downslope_neighbors = downslope_neighbors[np.argsort(downslope_neighbors[:, 0])]
+    #downslope_neighbors = downslope_neighbors[:, 1]
+
+    return downslope_neighbors
+
+
 def get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights):
     """
-    Returns the indices of the neighbors with the largest derivative for each node
+    Returns the indices of the neighbors with the largest derivative for all boundary nodes
     :param num_of_cols: Number of nodes in the x-direction
     :param num_of_rows: Number of nodes in the y-direction
     :param heights: Heights of all nodes
     :return indices_with_largest_derivative: The indices of the neighbors with the largest derivatives for each node
     """
-    boundary_indices = get_boundary_indices(num_of_cols, num_of_rows)
-    all_neighbors = get_node_neighbors_for_indices(boundary_indices, num_of_cols, num_of_rows)
-    heights_indices = heights[boundary_indices]
-    indices_downslope_neighbors = np.empty(len(boundary_indices), dtype=int)
 
-    for i in range(len(boundary_indices)):
-        neighbors = np.asarray(all_neighbors[i])
-        index_height_vec = np.array([heights_indices[i]] * len(neighbors))
-        heights_of_neighbors = heights[neighbors]
+    corner_downslope_indices = get_downslope_indices_corners(num_of_cols, num_of_rows, heights)
+    side_downslope_indices = get_downslope_indices_sides(num_of_cols, num_of_rows, heights)
+    boundary_downslope_indices = np.concatenate((corner_downslope_indices, side_downslope_indices))
+    boundary_downslope_indices = boundary_downslope_indices[np.argsort(boundary_downslope_indices[:, 0])]
 
-        diff = index_height_vec - heights_of_neighbors
-        index_steepest = -1
-        if np.amax(diff) > 0:
-            index_steepest = neighbors[np.argmax(diff)]
-        indices_downslope_neighbors[i] = index_steepest
-
-    return indices_downslope_neighbors
+    return boundary_downslope_indices
 
 
 def get_neighbors_interior(num_of_cols, num_of_rows):
