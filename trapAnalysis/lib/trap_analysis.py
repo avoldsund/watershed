@@ -53,3 +53,33 @@ def get_downslope_minimums(num_of_cols, num_of_rows, downslope_neighbors):
             continue
 
     return terminal_nodes
+
+
+def get_downslope_minimums_alternative(num_of_cols, num_of_rows, downslope_neighbors):
+
+    num_of_nodes = num_of_cols * num_of_rows
+    terminal_nodes = np.empty(num_of_nodes, dtype=object)
+
+    for i in range(num_of_nodes):
+        if terminal_nodes[i] is None:
+            downslope_neighbor = downslope_neighbors[i]
+            if downslope_neighbor == -1:  # The node itself is a minimum
+                terminal_nodes[i] = i
+            elif downslope_neighbors[downslope_neighbor] == -1:  # The downslope neighbor is a minimum
+                terminal_nodes[i] = downslope_neighbor
+            else:  # Follow the node path to the first minimum
+                river = [i]
+                while downslope_neighbor != -1:
+                    river.append(downslope_neighbor)
+                    prev = downslope_neighbor
+                    downslope_neighbor = downslope_neighbors[downslope_neighbor]
+
+                    if terminal_nodes[downslope_neighbor] is not None:  # If your river hits an existing river
+                        terminal_nodes[river] = terminal_nodes[downslope_neighbor]
+
+                    if downslope_neighbor == -1:
+                        terminal_nodes[river] = prev
+        else:
+            continue
+
+    return terminal_nodes
