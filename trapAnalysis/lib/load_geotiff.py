@@ -1,6 +1,9 @@
 from osgeo import gdal  # For reading tiff files
 import numpy as np      # For masked matrices
 import util
+import sys
+sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
+import trap_analysis
 
 
 def load_data_set(filename):
@@ -29,12 +32,10 @@ def get_array_from_band(data_set, band=1):
 
     band = data_set.GetRasterBand(band)
     arr = np.ma.masked_array(band.ReadAsArray())
-
     no_data_value = band.GetNoDataValue()
-    print np.count_nonzero(arr[arr == no_data_value])
+
     if no_data_value:
         arr[arr == no_data_value] = np.ma.masked
-
     return arr
 
 
@@ -48,7 +49,7 @@ def set_landscape(data_set):
     geo_transform = data_set.GetGeoTransform()
     nx = data_set.RasterXSize
     ny = data_set.RasterYSize
-    landscape = util.Landscape(geo_transform, nx, ny)
+    landscape = trap_analysis.Landscape(geo_transform, nx, ny)
 
     return landscape
 
@@ -80,3 +81,18 @@ def construct_landscape_grid(arr, landscape):
     # Set z-coordinates
     z = np.reshape(arr, (1, np.product(arr.shape)))[0]
     landscape.coordinates[:, 2] = z
+
+
+def get_landscape(file_name):
+    """
+    Returns a landscape object given a tiff file. This object contains all coordinates, downslope neighbors etc.
+    :param file_name: File name of the .tiff data file
+    :return landscape: Landscape object
+    """
+
+    data_set = load_data_set(file_name)
+    arr = get_array_from_band(data_set)
+    landscape = set_landscape(data_set)
+    construct_landscape_grid(arr, landscape)
+
+    return landscape
