@@ -147,7 +147,7 @@ def get_downslope_indices_corners(num_of_cols, num_of_rows, heights):
     flat_corners_derivatives = corners_derivatives.flatten()
     col_multiplier = np.arange(0, len(corners), 1) * 3
     indices_in_flat = col_multiplier + corners_downslope
-    is_minimum = flat_corners_derivatives[indices_in_flat] < 0
+    is_minimum = flat_corners_derivatives[indices_in_flat] <= 0
     indices_downslope_neighbors = np.choose(corners_downslope, corner_neighbors.T)
     indices_downslope_neighbors[is_minimum] = -1
     indices_downslope_neighbors = np.column_stack((corners, indices_downslope_neighbors))
@@ -191,7 +191,7 @@ def get_downslope_indices_sides(num_of_cols, num_of_rows, heights):
     flat_derivatives = derivatives.flatten()
     col_multiplier = np.arange(0, len(indices), 1) * 5
     indices_in_flat = col_multiplier + downslope_indices
-    is_minimum = flat_derivatives[indices_in_flat] < 0
+    is_minimum = flat_derivatives[indices_in_flat] <= 0
 
     downslope_neighbors = np.choose(downslope_indices, neighbors.T)
     downslope_neighbors[is_minimum] = -1
@@ -269,7 +269,7 @@ def get_downslope_indices_interior(num_of_cols, num_of_rows, heights):
     flat_derivatives = derivatives.flatten()
     col_multiplier = np.arange(0, len(indices), 1) * 8
     indices_in_flat = col_multiplier + indices_of_steepest
-    is_minimum = flat_derivatives[indices_in_flat] < 0
+    is_minimum = flat_derivatives[indices_in_flat] <= 0
 
     # Setting all local minimum indices to -1
     indices_downslope_neighbors = np.choose(indices_of_steepest, neighbors.T)
