@@ -40,6 +40,7 @@ def get_downslope_minimums(num_of_cols, num_of_rows, downslope_neighbors):
             else:  # Follow the node path to the first minimum
                 river = [i]
                 while downslope_neighbor != -1:
+
                     river.append(downslope_neighbor)
                     prev = downslope_neighbor
                     downslope_neighbor = downslope_neighbors[downslope_neighbor]
