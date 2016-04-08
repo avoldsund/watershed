@@ -47,8 +47,8 @@ def set_landscape(data_set):
     """
 
     geo_transform = data_set.GetGeoTransform()
-    nx = data_set.RasterXSize
-    ny = data_set.RasterYSize
+    nx = data_set.RasterXSize - 1  # For avoiding the first column!!!!!!!!!!!!!
+    ny = data_set.RasterYSize - 1  # For avoiding the first column!!!!!!!!!!!!!
     landscape = trap_analysis.Landscape(geo_transform, nx, ny)
 
     return landscape
@@ -68,17 +68,18 @@ def construct_landscape_grid(arr, landscape):
         return
 
     # Set x-coordinates, they will be row by row, so the x-grid is repeated
-    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
+    x_grid = np.linspace(landscape.x_min + landscape.step_size, landscape.x_max, landscape.num_of_nodes_x)  # For avoiding the first column!!!!!!!!!!!!!
     x = np.tile(x_grid, landscape.num_of_nodes_y)
     landscape.coordinates[:, 0] = x
 
     # Set y-coordinates, they will be have the same y-value for each row
-    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
+    y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y) # For avoiding the first column!!!!!!!!!!!!!
     y = np.repeat(y_grid, landscape.num_of_nodes_y)
 
     landscape.coordinates[:, 1] = y
 
     # Set z-coordinates
+    arr = arr[:-1, 1:] # For avoiding the first column!!!!!!!!!!!!!
     z = np.reshape(arr, (1, np.product(arr.shape)))[0]
     landscape.coordinates[:, 2] = z
 
