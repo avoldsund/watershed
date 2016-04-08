@@ -223,7 +223,7 @@ def test_get_neighbors_interior():
     assert np.array_equal(neighbors, result_neighbors)
 
 
-def test_get_downslope_neighbors_interior():
+def test_get_downslope_indices_interior():
 
     num_of_cols = 5
     num_of_rows = 5
@@ -241,8 +241,9 @@ def test_get_downslope_neighbors_interior():
                         2, 27, 18, 149, 20, 31, 33, 36, 24, 22,
                         91, 93, 92, 21, 34])
 
-    result_steepest_neighbors = np.array([10, 12, 9, 10, -1, 12, 10, 12, 12])
-    steepest_neighbors = util.get_downslope_neighbors_interior(num_of_cols, num_of_rows, heights)
+    result_steepest_neighbors = np.array([[6, 10], [7, 12], [8, 9], [11, 10], [12, -1],
+                                         [13, 12], [16, 10], [17, 12], [18, 12]])
+    steepest_neighbors = util.get_downslope_indices_interior(num_of_cols, num_of_rows, heights)
 
     assert np.array_equal(steepest_neighbors, result_steepest_neighbors)
 
@@ -274,7 +275,7 @@ def test_get_downslope_indices_sides():
     assert np.array_equal(sides_downslope, result_sides_downslope)
 
 
-def test_get_downslope_neighbors_boundary():
+def test_get_downslope_indices_boundary():
 
     num_of_cols = 3
     num_of_rows = 3
@@ -282,11 +283,11 @@ def test_get_downslope_neighbors_boundary():
 
     result_downslope = np.array([[0, 3], [1, 3], [2, 1], [3, 6], [5, 8], [6, -1], [7, 6], [8, -1]])
 
-    downslope = util.get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights)
+    downslope = util.get_downslope_indices_boundary(num_of_cols, num_of_rows, heights)
 
     assert np.array_equal(downslope, result_downslope)
 
-"""
+
 def test_get_downslope_neighbors():
 
     num_of_cols = 3
@@ -299,4 +300,3 @@ def test_get_downslope_neighbors():
     downslope_neighbors = util.get_downslope_neighbors(num_of_cols, num_of_rows, heights)
 
     assert np.array_equal(downslope_neighbors, result_downslope_neighbors)
-"""

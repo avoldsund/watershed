@@ -62,23 +62,6 @@ def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
 
     return neighbors
 
-"""
-def get_node_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y):
-    NOTE: This is returning the neighbors for all indices as 2d-array
-    :param indices:
-    :param num_of_nodes_x:
-    :param num_of_nodes_y:
-    :return:
-
-    neighbors = np.empty(len(indices), dtype=object)
-
-    counter = 0
-    for index in indices:
-        neighbors[counter] = get_node_neighbors_boundary(index, num_of_nodes_x, num_of_nodes_y)
-        counter += 1
-
-    return neighbors
-"""
 
 def get_node_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
 
@@ -140,24 +123,6 @@ def get_interior_indices(num_of_cols, num_of_rows):
 
     return interior_indices
 
-
-"""def get_downslope_neighbors_special_distances(indices, num_of_cols, num_of_rows, dist_to_neighbors, heights)
-
-    neighbors = get_node_neighbors_for_indices(indices, num_of_cols, num_of_rows)
-    delta_z = np.transpose(np.tile(heights[indices], (len(dist_to_neighbors), 1))) - heights[neighbors]
-    derivatives = np.divide(delta_z, dist_to_neighbors)
-    downslope_indices = derivatives.argmax(axis=1)
-    flat_derivatives = derivatives.flatten()
-
-    col_multiplier = np.arange(0, len(indices), 1) * 8
-    indices_in_flat = col_multiplier + downslope_indices
-    is_minimum = flat_derivatives[indices_in_flat] < 0
-    indices_downslope_neighbors = np.choose(downslope_indices, neighbors.T)
-    indices_downslope_neighbors[is_minimum] = -1
-
-    return indices_downslope_neighbors
-
-"""
 
 def get_downslope_indices_corners(num_of_cols, num_of_rows, heights):
     """
@@ -238,7 +203,7 @@ def get_downslope_indices_sides(num_of_cols, num_of_rows, heights):
     return downslope_neighbors
 
 
-def get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights):
+def get_downslope_indices_boundary(num_of_cols, num_of_rows, heights):
     """
     Returns the indices of the neighbors with the largest derivative for all boundary nodes
     :param num_of_cols: Number of nodes in the x-direction
@@ -281,7 +246,7 @@ def get_neighbors_interior(num_of_cols, num_of_rows):
     return indices, neighbors
 
 
-def get_downslope_neighbors_interior(num_of_cols, num_of_rows, heights):
+def get_downslope_indices_interior(num_of_cols, num_of_rows, heights):
     """
     Returns the indices of all neighbors with steepest derivatives
     :param num_of_cols: Number of nodes in x-direction
@@ -310,6 +275,8 @@ def get_downslope_neighbors_interior(num_of_cols, num_of_rows, heights):
     indices_downslope_neighbors = np.choose(indices_of_steepest, neighbors.T)
     indices_downslope_neighbors[is_minimum] = -1
 
+    indices_downslope_neighbors = np.column_stack((indices, indices_downslope_neighbors))
+
     return indices_downslope_neighbors
 
 
@@ -322,17 +289,11 @@ def get_downslope_neighbors(num_of_cols, num_of_rows, heights):
     :return downslope_neighbors: Indices of all downslope neighbors for each node. Equal to -1 if the node is a minimum.
     """
 
-    boundary_indices = get_boundary_indices(num_of_cols, num_of_rows)
-    interior_indices = get_interior_indices(num_of_cols, num_of_rows)
-
-    indices = np.concatenate((boundary_indices, interior_indices))
-
-    downslope_neighbors_boundary = get_downslope_neighbors_boundary(num_of_cols, num_of_rows, heights)
-    downslope_neighbors_interior = get_downslope_neighbors_interior(num_of_cols, num_of_rows, heights)
+    downslope_neighbors_boundary = get_downslope_indices_boundary(num_of_cols, num_of_rows, heights)
+    downslope_neighbors_interior = get_downslope_indices_interior(num_of_cols, num_of_rows, heights)
     downslope_neighbors = np.concatenate((downslope_neighbors_boundary, downslope_neighbors_interior))
 
     # Change the order such that we get the downslope neighbors for index 0 to (nx x ny) chronologically
-    downslope_neighbors = np.column_stack((indices, downslope_neighbors))
     downslope_neighbors = downslope_neighbors[np.argsort(downslope_neighbors[:, 0])][:, 1]
 
     return downslope_neighbors
