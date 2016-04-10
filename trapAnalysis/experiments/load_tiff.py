@@ -21,13 +21,14 @@ landscape = load_geotiff.get_landscape(file_name)
 
 print 'Done importing landscape'
 nx = landscape.num_of_nodes_x
-ny = landscape.num_of_nodes_y/8  # 85 seconds for /8
+ny = landscape.num_of_nodes_y  # 82 seconds for /8, 225 seconds for /4 OR IMPLEMENT NEW ONE WITH 31.6 /1!!!!!!!
 total = nx * ny
 
 downslope_neighbors = util.get_downslope_neighbors(nx, ny, landscape.coordinates[0:total, 2])
 
 start = time.time()
-terminal_nodes = trap_analysis.get_downslope_minimums(nx, ny, downslope_neighbors)
+terminal_nodes = trap_analysis.get_downslope_minimums_alternative(nx, ny, downslope_neighbors)
 end = time.time()
 time_taken = end - start
 print time_taken
+
