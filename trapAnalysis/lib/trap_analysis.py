@@ -91,7 +91,8 @@ def get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors):
     num_of_end_nodes_inserted = len(indices_node_is_minimum)
 
     while num_of_end_nodes_inserted > 0:
-        num_of_end_nodes_inserted, terminal_nodes = update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_terminal)
+        num_of_end_nodes_inserted, terminal_nodes = update_terminal_nodes(terminal_nodes, downslope_neighbors,
+                                                                          indices_in_terminal)
 
     return terminal_nodes
 
@@ -112,6 +113,7 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
     indices_to_check_if_downslopes_are_minimum = downslope_neighbors[indices_end_points_not_localized]
     downslope_is_minimum = np.concatenate((np.where(terminal_nodes[indices_to_check_if_downslopes_are_minimum] == 0)[0],
                                            np.nonzero(terminal_nodes[indices_to_check_if_downslopes_are_minimum])[0]))
+
     indices = indices_end_points_not_localized[downslope_is_minimum]
     values = terminal_nodes[indices_to_check_if_downslopes_are_minimum[downslope_is_minimum]]
 
@@ -119,3 +121,6 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
     indices_in_terminal[indices] = True
 
     return len(values), terminal_nodes
+
+
+#def create_watershed(terminal_nodes, ):
