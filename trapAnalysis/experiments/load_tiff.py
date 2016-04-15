@@ -27,7 +27,7 @@ total = nx * ny
 downslope_neighbors = util.get_downslope_neighbors(nx, ny, landscape.coordinates[0:total, 2])
 
 start = time.time()
-terminal_nodes = trap_analysis.get_downslope_minimums_alternative(nx, ny, downslope_neighbors)
+terminal_nodes = trap_analysis.get_node_endpoints(nx, ny, downslope_neighbors)
 end = time.time()
 time_taken = end - start
 print time_taken
