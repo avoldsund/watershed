@@ -4,6 +4,7 @@ import util
 import sys
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
 import trap_analysis
+import plot
 
 
 def load_data_set(filename):
@@ -36,6 +37,7 @@ def get_array_from_band(data_set, band=1):
 
     if no_data_value:
         arr[arr == no_data_value] = np.ma.masked
+
     return arr
 
 
@@ -73,15 +75,17 @@ def construct_landscape_grid(arr, landscape):
     landscape.coordinates[:, 0] = x
 
     # Set y-coordinates, they will be have the same y-value for each row
-    y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y) # For avoiding the first column!!!!!!!!!!!!!
+    y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y)  # For avoiding the first column!!!!!!!!!!!!!
     y = np.repeat(y_grid, landscape.num_of_nodes_y)
 
     landscape.coordinates[:, 1] = y
 
     # Set z-coordinates
-    arr = arr[:-1, 1:] # For avoiding the first column!!!!!!!!!!!!!
+    arr = arr[:-1, 1:]  # For avoiding the first column!!!!!!!!!!!!!
     z = np.reshape(arr, (1, np.product(arr.shape)))[0]
     landscape.coordinates[:, 2] = z
+
+    landscape.arr = arr
 
 
 def get_landscape(file_name):
