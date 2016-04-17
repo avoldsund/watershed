@@ -13,6 +13,7 @@ class Landscape:
         self.y_min = self.y_max + geo_transform[5] * (self.num_of_nodes_y - 1)
         self.total_number_of_nodes = nx * ny
         self.coordinates = np.empty((self.total_number_of_nodes, 3))
+        self.arr = None
 
         step_size_x = geo_transform[1]
         step_size_y = geo_transform[5]
