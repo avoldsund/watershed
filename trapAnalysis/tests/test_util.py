@@ -76,7 +76,7 @@ def test_get_index_from_row_and_col():
     assert cmp(indices, result_indices) == 0
 
 
-def test_get_node_neighbors_boundary_square():
+def test_get_neighbors_boundary_square():
 
     num_of_nodes_x = 3
     num_of_nodes_y = 3
@@ -87,12 +87,12 @@ def test_get_node_neighbors_boundary_square():
 
     neighbors = []
     for i in range(num_of_nodes_x * num_of_nodes_y):
-        neighbors.append(util.get_node_neighbors_boundary(i, num_of_nodes_x, num_of_nodes_y))
+        neighbors.append(util.get_neighbors_boundary(i, num_of_nodes_x, num_of_nodes_y))
 
     assert cmp(neighbors, result_neighbors) == 0
 
 
-def test_get_node_neighbors_boundary_skinny():
+def test_get_neighbors_boundary_skinny():
 
     num_of_nodes_x = 2
     num_of_nodes_y = 3
@@ -102,7 +102,7 @@ def test_get_node_neighbors_boundary_skinny():
 
     neighbors = []
     for i in range(num_of_nodes_x * num_of_nodes_y):
-        neighbors.append(util.get_node_neighbors_boundary(i, num_of_nodes_x, num_of_nodes_y))
+        neighbors.append(util.get_neighbors_boundary(i, num_of_nodes_x, num_of_nodes_y))
 
     assert cmp(neighbors, result_neighbors) == 0
 
@@ -157,6 +157,18 @@ def test_is_boundary_node_large():
 
     print boundary_nodes
     assert cmp(boundary_nodes, result_are_boundary_nodes) == 0
+
+
+def test_are_boundary_nodes():
+
+    num_of_cols = 5
+    num_of_rows = 5
+
+    indices = np.arange(0, num_of_cols * num_of_rows, 1)
+    result_boundary_indices = np.array([0, 1, 2, 3, 4, 5, 9, 10, 14, 15, 19, 20, 21, 22, 23, 24])
+    boundary_indices = util.are_boundary_nodes(indices, num_of_cols, num_of_rows)
+
+    assert np.array_equal(boundary_indices, result_boundary_indices)
 
 
 def test_get_boundary_indices_square():
@@ -285,6 +297,6 @@ def test_get_downslope_neighbors():
 
     result_downslope_neighbors = np.array([4, 5, 5, 7, 8, 8, 7, 8, -1])
 
-    downslope_neighbors = util.get_downslope_neighbors(num_of_cols, num_of_rows, heights)
+    downslope_neighbors = util.get_downslope_indices(num_of_cols, num_of_rows, heights)
 
     assert np.array_equal(downslope_neighbors, result_downslope_neighbors)

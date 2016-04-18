@@ -44,7 +44,7 @@ def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
     return node_index
 
 
-def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
+def get_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
     """
     Returns the indices of the neighbors of boundary nodes given the node index
     :param node_index: Index of node
@@ -63,13 +63,65 @@ def get_node_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
-def get_node_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
+def get_neighbors_interior(num_of_cols, num_of_rows):
+    """
+    Returns the neighbors of the interior nodes
+    :param num_of_cols:
+    :param num_of_rows:
+    :return:
+    """
+
+    indices = get_interior_indices(num_of_cols, num_of_rows)
+    nr_of_nodes = len(indices)
+    neighbors = np.empty((nr_of_nodes, 8), dtype=int)
+    one_array = np.ones(nr_of_nodes)
+    n_array = one_array * num_of_cols
+
+    neighbors[:, 0] = indices - n_array - one_array
+    neighbors[:, 1] = indices - n_array
+    neighbors[:, 2] = indices - n_array + one_array
+    neighbors[:, 3] = indices - one_array
+    neighbors[:, 4] = indices + one_array
+    neighbors[:, 5] = indices + n_array - one_array
+    neighbors[:, 6] = indices + n_array
+    neighbors[:, 7] = indices + n_array + one_array
+
+    return indices, neighbors
+
+
+def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
 
     neighbors = []
     for index in indices:
-        neighbors.append(get_node_neighbors_boundary(index, num_of_nodes_x, num_of_nodes_y))
+        neighbors.append(get_neighbors_boundary(index, num_of_nodes_x, num_of_nodes_y))
 
     return neighbors
+
+#def get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y):
+#
+#    boundary_indices = is_boundary_node()
+#    interior_indices =
+
+
+def are_boundary_nodes(indices, num_of_cols, num_of_rows):
+    """
+    Given an array of indices, returns the indices of the boundary nodes
+    :param indices: All indices to be checked if they are boundary nodes
+    :param num_of_cols: Number of columns in the 2d-grid
+    :param num_of_rows: Number of rows in the 2d-grid
+    :return are_boundary: An array of the boundary indices
+    """
+
+    are_top = indices[indices < num_of_cols]
+    are_left = indices[indices % num_of_cols == 0]
+    are_right = indices[(indices + 1) % num_of_cols == 0]
+
+    are_bottom = indices[((num_of_cols * num_of_rows - num_of_cols) <= indices) &
+                         (indices < num_of_cols * num_of_rows)]
+
+    are_boundary = np.unique(np.sort(np.concatenate((are_top, are_left, are_right, are_bottom))))
+
+    return are_boundary
 
 
 def is_boundary_node(node_index, num_of_cols, num_of_rows):
@@ -135,7 +187,7 @@ def get_downslope_indices_corners(num_of_cols, num_of_rows, heights):
 
     total_nodes = num_of_cols * num_of_rows
     corners = np.array([0, num_of_cols - 1, total_nodes - num_of_cols, total_nodes - 1])
-    corner_neighbors = np.array(get_node_neighbors_for_indices(corners, num_of_cols, num_of_rows))
+    corner_neighbors = np.array(get_neighbors_for_indices(corners, num_of_cols, num_of_rows))
     corners_dist_to_neighbors = np.array([[10, 10, math.sqrt(200)],
                                           [10, math.sqrt(200), 10],
                                           [10, math.sqrt(200), 10],
@@ -172,7 +224,7 @@ def get_downslope_indices_sides(num_of_cols, num_of_rows, heights):
     right = np.arange(2 * num_of_cols - 1, num_of_cols * num_of_rows - 1, num_of_cols)
     indices = np.concatenate((top, bottom, left, right))
 
-    neighbors = np.array(get_node_neighbors_for_indices(indices, num_of_cols, num_of_rows))
+    neighbors = np.array(get_neighbors_for_indices(indices, num_of_cols, num_of_rows))
 
     dist_to_neighbors_top = np.array([10, 10, math.sqrt(200), 10, math.sqrt(200)])
     dist_to_neighbors_bottom = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10])
@@ -220,32 +272,6 @@ def get_downslope_indices_boundary(num_of_cols, num_of_rows, heights):
     return boundary_downslope_indices
 
 
-def get_neighbors_interior(num_of_cols, num_of_rows):
-    """
-    Returns the neighbors of the interior nodes
-    :param num_of_cols:
-    :param num_of_rows:
-    :return:
-    """
-
-    indices = get_interior_indices(num_of_cols, num_of_rows)
-    nr_of_nodes = len(indices)
-    neighbors = np.empty((nr_of_nodes, 8), dtype=int)
-    one_array = np.ones(nr_of_nodes)
-    n_array = one_array * num_of_cols
-
-    neighbors[:, 0] = indices - n_array - one_array
-    neighbors[:, 1] = indices - n_array
-    neighbors[:, 2] = indices - n_array + one_array
-    neighbors[:, 3] = indices - one_array
-    neighbors[:, 4] = indices + one_array
-    neighbors[:, 5] = indices + n_array - one_array
-    neighbors[:, 6] = indices + n_array
-    neighbors[:, 7] = indices + n_array + one_array
-
-    return indices, neighbors
-
-
 def get_downslope_indices_interior(num_of_cols, num_of_rows, heights):
     """
     Returns the indices of all neighbors with steepest derivatives
@@ -280,7 +306,7 @@ def get_downslope_indices_interior(num_of_cols, num_of_rows, heights):
     return indices_downslope_neighbors
 
 
-def get_downslope_neighbors(num_of_cols, num_of_rows, heights):
+def get_downslope_indices(num_of_cols, num_of_rows, heights):
     """
     Returns the downslope neighbors for all indices
     :param num_of_cols: Number of nodes is x-direction
@@ -289,11 +315,11 @@ def get_downslope_neighbors(num_of_cols, num_of_rows, heights):
     :return downslope_neighbors: Indices of all downslope neighbors for each node. Equal to -1 if the node is a minimum.
     """
 
-    downslope_neighbors_boundary = get_downslope_indices_boundary(num_of_cols, num_of_rows, heights)
-    downslope_neighbors_interior = get_downslope_indices_interior(num_of_cols, num_of_rows, heights)
-    downslope_neighbors = np.concatenate((downslope_neighbors_boundary, downslope_neighbors_interior))
+    downslope_indices_boundary = get_downslope_indices_boundary(num_of_cols, num_of_rows, heights)
+    downslope_indices_interior = get_downslope_indices_interior(num_of_cols, num_of_rows, heights)
+    downslope_indices = np.concatenate((downslope_indices_boundary, downslope_indices_interior))
 
     # Change the order such that we get the downslope neighbors for index 0 to (nx x ny) chronologically
-    downslope_neighbors = downslope_neighbors[np.argsort(downslope_neighbors[:, 0])][:, 1]
+    downslope_indices = downslope_indices[np.argsort(downslope_indices[:, 0])][:, 1]
 
-    return downslope_neighbors
+    return downslope_indices
