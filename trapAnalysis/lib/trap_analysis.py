@@ -15,6 +15,7 @@ class Landscape:
         self.coordinates = np.empty((self.total_number_of_nodes, 3))
         self.arr = None
 
+
         step_size_x = geo_transform[1]
         step_size_y = geo_transform[5]
         unequal_step_size = (abs(step_size_x) != abs(step_size_y))
@@ -124,4 +125,28 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
     return len(values), terminal_nodes
 
 
-#def create_watershed(terminal_nodes, ):
+def combine_local_watersheds(endpoints):
+
+
+
+    max_number_of_watersheds = (np.unique(endpoints)).size
+    watersheds = np.empty(max_number_of_watersheds)
+
+
+def get_indices_leading_to_endpoints(endpoints):
+    """
+    Returns a list of the indices of all nodes ending up in each endpoint, as well as which endpoint it is
+    :param endpoints: All nodes which are endpoints for other nodes
+    :return unique: Indices of all endpoints in sorted order
+    :return indices_to_endpoints: List of arrays where each array is the indices of all nodes going to that node
+    """
+
+    unique, counts = np.unique(endpoints, return_counts=True)
+    indices_to_endpoints = []
+
+    for i in range(len(unique)):
+        nr_of_indices_to_endpoint = counts[i]
+        indices_to_endpoint = np.where(endpoints == unique[i])[0]
+        indices_to_endpoints.append(indices_to_endpoint)
+
+    return unique, indices_to_endpoints
