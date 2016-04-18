@@ -128,7 +128,10 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
 def combine_local_watersheds(endpoints):
 
 
+    unique, indices_to_endpoints = get_indices_leading_to_endpoints(endpoints)
 
+    # Must combine all indices in unique that are next to each other
+    util.get
     max_number_of_watersheds = (np.unique(endpoints)).size
     watersheds = np.empty(max_number_of_watersheds)
 
