@@ -32,7 +32,7 @@ def get_index_from_row_and_col(row_number, col_number, number_of_cols):
 
 def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
     """
-    Given a node in the 2d-grid we return the index in the 1d-array
+    Given a coordinate in the 2d-grid we return the index in the 1d-array
     :param x_coord: Coordinate in the x-direction
     :param y_coord: Coordinate in the y-direction
     :param num_of_nodes_x: Number of grid points in the x-direction
@@ -63,7 +63,7 @@ def get_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
-def get_neighbors_interior(num_of_cols, num_of_rows):
+def get_all_neighbors_interior(num_of_cols, num_of_rows):
     """
     Returns the neighbors of the interior nodes
     :param num_of_cols:
@@ -89,6 +89,25 @@ def get_neighbors_interior(num_of_cols, num_of_rows):
     return indices, neighbors
 
 
+def get_neighbors_for_interior_indices(indices, num_of_cols):
+
+    nr_of_nodes = len(indices)
+    neighbors = np.empty((nr_of_nodes, 8), dtype=int)
+    one_array = np.ones(nr_of_nodes)
+    n_array = one_array * num_of_cols
+
+    neighbors[:, 0] = indices - n_array - one_array
+    neighbors[:, 1] = indices - n_array
+    neighbors[:, 2] = indices - n_array + one_array
+    neighbors[:, 3] = indices - one_array
+    neighbors[:, 4] = indices + one_array
+    neighbors[:, 5] = indices + n_array - one_array
+    neighbors[:, 6] = indices + n_array
+    neighbors[:, 7] = indices + n_array + one_array
+
+    return neighbors
+
+
 def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
 
     neighbors = []
@@ -97,10 +116,63 @@ def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
 
     return neighbors
 
-#def get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y):
-#
-#    boundary_indices = is_boundary_node()
-#    interior_indices =
+
+def get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y):
+
+    # Getting neighbors for boundary and interior, and padding boundary corners
+    boundary_indices = are_boundary_nodes(indices, num_of_nodes_x, num_of_nodes_y)
+    total_nodes = num_of_nodes_x * num_of_nodes_y
+    corners = np.array([0, num_of_nodes_x - 1, total_nodes - num_of_nodes_x,
+                        total_nodes - 1])
+    corner_indices = np.where(boundary_indices == corners[0] or boundary_indices == corners[1] or
+                              boundary_indices == corners[2] or boundary_indices == corners[3])[0]
+    for corner in corner_indices:
+        boundary_indices[corner].extend([-1, -1])
+
+    interior_indices = np.setdiff1d(indices, boundary_indices, assume_unique=True)
+
+    boundary_neighbors = np.column_stack((boundary_indices, get_neighbors_for_indices(boundary_indices)))
+    interior_neighbors = np.column_stack((interior_indices,
+                                          get_neighbors_for_interior_indices(interior_indices, num_of_nodes_x)))
+    neighbors = np.concatenate((boundary_neighbors, interior_neighbors))
+    neighbors = neighbors[np.argsort(neighbors[:, 0])]
+
+    watersheds = []
+    intersections = []
+    for i in range(len(indices)):
+        intersections.append(np.intersect1d(indices, neighbors[i]))
+
+    for i in range(len(indices)):
+        watershed = []
+        poplist = [indices[i]]
+        watershed.append(indices[i])
+        while poplist:
+            local_min = poplist.pop()
+            local_min_index = indices.index(local_min)
+            poplist.extend(neighbors[local_min_index])
+            watershed.extend(neighbors[local_min_index])
+        watersheds.append(watershed)
+
+    return watersheds
+
+
+def is_boundary_node(node_index, num_of_cols, num_of_rows):
+    """
+    Returns true if the node is on the boundary, otherwise returns false
+    :param node_index: Index of node in 1d-array
+    :param num_of_cols: Number of columns in 2d-grid
+    :param num_of_rows: Number of rows in 2d-grid
+    :return is_boundary: True if node is a boundary point, otherwise false
+    """
+
+    is_top = node_index < num_of_cols
+    is_left = node_index % num_of_cols == 0
+    is_right = (node_index + 1) % num_of_cols == 0
+    is_bottom = ((num_of_cols * num_of_rows - num_of_cols) <= node_index) and (node_index < num_of_cols * num_of_rows)
+
+    is_boundary = is_top or is_left or is_right or is_bottom
+
+    return is_boundary
 
 
 def are_boundary_nodes(indices, num_of_cols, num_of_rows):
@@ -122,25 +194,6 @@ def are_boundary_nodes(indices, num_of_cols, num_of_rows):
     are_boundary = np.unique(np.sort(np.concatenate((are_top, are_left, are_right, are_bottom))))
 
     return are_boundary
-
-
-def is_boundary_node(node_index, num_of_cols, num_of_rows):
-    """
-    Returns true if the node is on the boundary, otherwise returns false
-    :param node_index: Index of node in 1d-array
-    :param num_of_cols: Number of columns in 2d-grid
-    :param num_of_rows: Number of rows in 2d-grid
-    :return is_boundary: True if node is a boundary point, otherwise false
-    """
-
-    is_top = node_index < num_of_cols
-    is_left = node_index % num_of_cols == 0
-    is_right = (node_index + 1) % num_of_cols == 0
-    is_bottom = ((num_of_cols * num_of_rows - num_of_cols) <= node_index) and (node_index < num_of_cols * num_of_rows)
-
-    is_boundary = is_top or is_left or is_right or is_bottom
-
-    return is_boundary
 
 
 def get_boundary_indices(num_of_cols, num_of_rows):
@@ -280,7 +333,7 @@ def get_downslope_indices_interior(num_of_cols, num_of_rows, heights):
     :param heights: The heights of all nodes
     :return indices_of_steepest_neighbors: The index of the steepest neighbor for each node
     """
-    indices, neighbors = get_neighbors_interior(num_of_cols, num_of_rows)
+    indices, neighbors = get_all_neighbors_interior(num_of_cols, num_of_rows)
     heights_of_indices = np.transpose(np.tile(heights[indices], (8, 1)))
 
     # Calculating the derivatives of all neighbors
