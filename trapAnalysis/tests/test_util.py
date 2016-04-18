@@ -204,7 +204,7 @@ def test_get_interior_indices():
     assert np.array_equal(interior_indices, result_interior_indices)
 
 
-def test_get_neighbors_interior():
+def test_get_all_neighbors_interior():
 
     num_of_cols = 5
     num_of_rows = 5
@@ -218,7 +218,7 @@ def test_get_neighbors_interior():
                                 [11, 12, 13, 16, 18, 21, 22, 23],
                                 [12, 13, 14, 17, 19, 22, 23, 24]], dtype=int)
 
-    indices, neighbors = util.get_neighbors_interior(num_of_cols, num_of_rows)
+    indices, neighbors = util.get_all_neighbors_interior(num_of_cols, num_of_rows)
 
     assert np.array_equal(neighbors, result_neighbors)
 
