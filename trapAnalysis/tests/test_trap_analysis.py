@@ -1,7 +1,9 @@
 import sys
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
+sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
 import trap_analysis
 import numpy as np
+import util
 
 
 def test_get_node_endpoints_one_min():
@@ -85,3 +87,15 @@ def test_get_indices_leading_to_endpoints():
         are_equal = False
 
     assert are_equal is True
+
+
+def test_get_watershed_indices():
+
+    num_of_nodes_x = 6
+    num_of_nodes_y = 5
+    indices = np.array([5, 7, 13, 22, 23, 28, 29])
+    watershed_indices = [[5], [7, 13], [22, 23, 28, 29]]
+    watersheds = util.get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y)
+
+    assert cmp(watersheds, watershed_indices) == 0
+
