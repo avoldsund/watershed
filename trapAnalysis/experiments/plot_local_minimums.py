@@ -13,7 +13,7 @@ Plot all local minimums in the area
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
 
 landscape = load_geotiff.get_landscape(file_name)
-downslope_neighbors = util.get_downslope_neighbors(landscape.num_of_nodes_x, landscape.num_of_nodes_y,
+downslope_neighbors = util.get_downslope_indices(landscape.num_of_nodes_x, landscape.num_of_nodes_y,
                                                    landscape.coordinates[0:landscape.total_number_of_nodes, 2])
 
 indices_minimum = (np.where(downslope_neighbors == -1))[0]
