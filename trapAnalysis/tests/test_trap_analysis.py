@@ -89,13 +89,13 @@ def test_get_indices_leading_to_endpoints():
     assert are_equal is True
 
 
-def test_get_watershed_indices():
-
-    num_of_nodes_x = 6
-    num_of_nodes_y = 5
-    indices = np.array([5, 7, 13, 22, 23, 28, 29])
-    watershed_indices = [[5], [7, 13], [22, 23, 28, 29]]
-    watersheds = util.get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y)
-
-    assert cmp(watersheds, watershed_indices) == 0
+#def test_get_watersheds():
+#
+#   num_of_nodes_x = 6
+#   num_of_nodes_y = 5
+#   indices = np.array([5, 7, 13, 22, 23, 28, 29])
+#   watershed_indices = [[5], [7, 13], [22, 23, 28, 29]]
+#   watersheds = util.get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y)
+#
+#    assert cmp(watersheds, watershed_indices) == 0
 
