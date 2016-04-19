@@ -300,3 +300,16 @@ def test_get_downslope_neighbors():
     downslope_neighbors = util.get_downslope_indices(num_of_cols, num_of_rows, heights)
 
     assert np.array_equal(downslope_neighbors, result_downslope_neighbors)
+
+
+def test_get_watersheds():
+
+    minimum_indices = set([5, 7, 13, 22, 23, 28, 29])
+    neighbors = {5: set([4, 10, 11]), 7: set([0, 1, 2, 6, 8, 12, 13, 14]), 13: set([6, 7, 8, 12, 14, 18, 19, 20]),
+                 22: set([15, 16, 17, 21, 23, 27, 28, 29]), 23: set([16, 17, 22, 28, 29]),
+                 28: set([21, 22, 23, 27, 29]), 29: set([22, 23, 28])}
+    result_watersheds = {0: set([5]), 1: set([7, 13]), 2: set([22, 23, 28, 29])}
+    watersheds = util.get_watersheds(minimum_indices, neighbors)
+    diff = set(watersheds.keys()) - set(result_watersheds.keys())
+
+    assert watersheds == result_watersheds

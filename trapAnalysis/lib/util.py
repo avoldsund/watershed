@@ -2,6 +2,7 @@ import numpy as np
 import math
 
 
+
 def get_row_and_col_from_index(node_index, number_of_cols):
     """
     Given an index in the 1d-grid, the row number and column coordinates in the 2d-grid is returned
@@ -46,7 +47,7 @@ def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
 
 def get_neighbors_boundary(node_index, num_of_nodes_x, num_of_nodes_y):
     """
-    Returns the indices of the neighbors of boundary nodes given the node index
+    Returns the indices of the neighbors of boundary nodes given the node index in 1d-grid
     :param node_index: Index of node
     :return neighbors: List of neighbor indices
     """
@@ -117,19 +118,47 @@ def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
-def get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y):
+def get_watersheds(minimum_indices, min_neighbors):
 
+    min_neighbors.update((index, neighbors.intersection(minimum_indices)) for index, neighbors in min_neighbors.items())
+    watersheds = {}
+
+    while minimum_indices:  # while more local minimums not assigned to a region
+        loc_min = minimum_indices.pop()
+        new_watershed = set([loc_min])  # must have unique elements
+        temp = set([loc_min])
+
+        while temp:  # while a region is not finished
+            index = temp.pop()
+            nbrs_of_loc_min = set(min_neighbors[index])
+            new_minimums = nbrs_of_loc_min.difference(new_watershed)
+            temp.update(new_minimums)
+            new_watershed.update(new_minimums)
+            minimum_indices = minimum_indices.difference(new_minimums)
+
+        watersheds[len(watersheds)] = new_watershed
+
+    return watersheds
+
+    """
+    GET BACK TO THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    # Need the neighbors of each minimum points. To do this, we must know which of them are
     # Getting neighbors for boundary and interior, and padding boundary corners
-    boundary_indices = are_boundary_nodes(indices, num_of_nodes_x, num_of_nodes_y)
     total_nodes = num_of_nodes_x * num_of_nodes_y
+
+    # Getting the indices that are boundary indices
+    boundary_indices = are_boundary_nodes(minimum_indices, num_of_nodes_x, num_of_nodes_y)
+
     corners = np.array([0, num_of_nodes_x - 1, total_nodes - num_of_nodes_x,
                         total_nodes - 1])
+    # Getting the indices that are corner indices
     corner_indices = np.where(boundary_indices == corners[0] or boundary_indices == corners[1] or
                               boundary_indices == corners[2] or boundary_indices == corners[3])[0]
     for corner in corner_indices:
         boundary_indices[corner].extend([-1, -1])
 
-    interior_indices = np.setdiff1d(indices, boundary_indices, assume_unique=True)
+    interior_indices = np.setdiff1d(minimum_indices, boundary_indices, assume_unique=True)
 
     boundary_neighbors = np.column_stack((boundary_indices, get_neighbors_for_indices(boundary_indices)))
     interior_neighbors = np.column_stack((interior_indices,
@@ -139,21 +168,22 @@ def get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y):
 
     watersheds = []
     intersections = []
-    for i in range(len(indices)):
-        intersections.append(np.intersect1d(indices, neighbors[i]))
+    for i in range(len(minimum_indices)):
+        intersections.append(np.intersect1d(minimum_indices, neighbors[i]))
 
-    for i in range(len(indices)):
+    for i in range(len(minimum_indices)):
         watershed = []
-        poplist = [indices[i]]
-        watershed.append(indices[i])
+        poplist = [minimum_indices[i]]
+        watershed.append(minimum_indices[i])
         while poplist:
             local_min = poplist.pop()
-            local_min_index = indices.index(local_min)
+            local_min_index = minimum_indices.index(local_min)
             poplist.extend(neighbors[local_min_index])
             watershed.extend(neighbors[local_min_index])
         watersheds.append(watershed)
 
     return watersheds
+    """
 
 
 def is_boundary_node(node_index, num_of_cols, num_of_rows):
