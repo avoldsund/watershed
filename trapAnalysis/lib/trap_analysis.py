@@ -125,17 +125,6 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
     return len(values), terminal_nodes
 
 
-def combine_local_watersheds(endpoints):
-
-
-    unique, indices_to_endpoints = get_indices_leading_to_endpoints(endpoints)
-
-    # Must combine all indices in unique that are next to each other
-    util.get
-    max_number_of_watersheds = (np.unique(endpoints)).size
-    watersheds = np.empty(max_number_of_watersheds)
-
-
 def get_indices_leading_to_endpoints(endpoints):
     """
     Returns a list of the indices of all nodes ending up in each endpoint, as well as which endpoint it is
@@ -153,3 +142,58 @@ def get_indices_leading_to_endpoints(endpoints):
         indices_to_endpoints.append(indices_to_endpoint)
 
     return unique, indices_to_endpoints
+
+
+def combine_all_minimums(minimum_indices, min_neighbors):
+    # THIS IS A TEST USING SETS, NOT SURE IF THIS IS FINAL SOLUTION. IF IT IS, MUCH MUST BE REWRITTEN!
+    """
+    The method will combine all the minimums in a landscape into larger local minimums. It will return a dictionary
+    with the key being the region number, and the value being all indices in the region. The method will be used as
+    part of the process of finding the watersheds.
+    :param minimum_indices: Indices of all local minimums in the landscape.
+    :param min_neighbors: The neighbors of all local minimums.
+    :return watersheds: Dictionary with region number as key, and value being all indices in the region.
+    """
+
+    min_neighbors.update((index, neighbors.intersection(minimum_indices)) for index, neighbors in min_neighbors.items())
+    watersheds = {}
+
+    while minimum_indices:  # while more local minimums not assigned to a region
+        loc_min = minimum_indices.pop()
+        new_watershed = set([loc_min])  # must have unique elements
+        temp = set([loc_min])
+
+        while temp:  # while a region is not finished
+            index = temp.pop()
+            nbrs_of_loc_min = set(min_neighbors[index])
+            new_minimums = nbrs_of_loc_min.difference(new_watershed)
+            temp.update(new_minimums)
+            new_watershed.update(new_minimums)
+            minimum_indices = minimum_indices.difference(new_minimums)
+
+        watersheds[len(watersheds)] = new_watershed
+
+    return watersheds
+
+
+def get_nodes_in_watersheds(watersheds, indices_to_endpoints):
+    """
+    The function returns a dictionary with key being the watershed number, and value being a set of all indices that
+    terminate in the watershed. The length of nodes_in_watershed will be the number of watersheds in the landscape.
+    :param watersheds: Dictionary with key being watershed number, and value being all minimum indices in the watershed.
+    :param indices_to_endpoints: Dictionary where the key is the index of the local minimum, and the value is a set of
+    all indices terminating in the local minimum.
+    :return nodes_in_watershed: Dictionary with key being the watershed number, and value being a set of all indices
+    that terminate in the watershed.
+    """
+
+    nodes_in_watershed = {}
+
+    for key, value in watersheds.iteritems():
+        temp_all_nodes = set()
+        for val in value:
+            temp_all_nodes = temp_all_nodes.union(indices_to_endpoints[val])
+
+        nodes_in_watershed[key] = temp_all_nodes
+
+    return nodes_in_watershed

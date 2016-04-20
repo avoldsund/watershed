@@ -53,17 +53,12 @@ def test_get_node_endpoints_four_mins_rectangular():
 
     assert np.array_equal(terminal_nodes, result_terminal_nodes)
 
-def test_combine_local_watersheds_three_mins_two_watersheds():
-
-    num_of_cols = 3
-    num_of_rows = 3
-    terminal_nodes = np.array([0, 0, 8, 0, 0, 8, 7, 7, 8])
-
 
 def test_get_indices_leading_to_endpoints():
 
     endpoints = np.array([7, 7, 5, 5, 5, 5, 7, 7, 13, 22, 5, 5, 13, 13, 13, 22,
                           22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
+    unique_endpoints = np.array([5, 7, 13, 22, 23, 28, 29])
     result_indices = [np.array([2, 3, 4, 5, 10, 11]),
                       np.array([0, 1, 6, 7]),
                       np.array([8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
@@ -89,13 +84,38 @@ def test_get_indices_leading_to_endpoints():
     assert are_equal is True
 
 
-#def test_get_watersheds():
-#
-#   num_of_nodes_x = 6
-#   num_of_nodes_y = 5
-#   indices = np.array([5, 7, 13, 22, 23, 28, 29])
-#   watershed_indices = [[5], [7, 13], [22, 23, 28, 29]]
-#   watersheds = util.get_neighbors_for_indices_improved(indices, num_of_nodes_x, num_of_nodes_y)
-#
-#    assert cmp(watersheds, watershed_indices) == 0
+def test_get_watersheds():
 
+    minimum_indices = set([5, 7, 13, 22, 23, 28, 29])
+    neighbors = {5: set([4, 10, 11]), 7: set([0, 1, 2, 6, 8, 12, 13, 14]), 13: set([6, 7, 8, 12, 14, 18, 19, 20]),
+                 22: set([15, 16, 17, 21, 23, 27, 28, 29]), 23: set([16, 17, 22, 28, 29]),
+                 28: set([21, 22, 23, 27, 29]), 29: set([22, 23, 28])}
+    result_watersheds = {0: set([5]), 1: set([7, 13]), 2: set([22, 23, 28, 29])}
+    watersheds = trap_analysis.combine_all_minimums(minimum_indices, neighbors)
+    diff = set(watersheds.keys()) - set(result_watersheds.keys())
+
+    assert watersheds == result_watersheds
+
+
+def test_get_nodes_to_watersheds():
+
+    watersheds = {0: set([5]), 1: set([7, 13]), 2: set([22, 23, 28, 29])}
+    indices_to_endpoints = {5: set([2, 3, 4, 5, 10, 11]), 7: set([0, 1, 6, 7]),
+                            13: set([8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                            22: set([9, 15, 16, 21, 22]), 23: set([17, 23]),
+                            28: set([27, 28]), 29: set([29])}
+    """
+    [np.array([2, 3, 4, 5, 10, 11]),
+                  np.array([0, 1, 6, 7]),
+                  np.array([8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                  np.array([9, 15, 16, 21, 22]),
+                  np.array([17, 23]),
+                  np.array([27, 28]),
+                  np.array([29])]
+    """
+    result_nodes_in_watershed = {0: set([2, 3, 4, 5, 10, 11]), 1: set([0, 1, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                                 2: set([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])}
+
+    nodes_in_watershed = trap_analysis.get_nodes_in_watersheds(watersheds, indices_to_endpoints)
+
+    assert nodes_in_watershed == result_nodes_in_watershed
