@@ -118,27 +118,10 @@ def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
-def get_watersheds(minimum_indices, min_neighbors):
 
-    min_neighbors.update((index, neighbors.intersection(minimum_indices)) for index, neighbors in min_neighbors.items())
-    watersheds = {}
 
-    while minimum_indices:  # while more local minimums not assigned to a region
-        loc_min = minimum_indices.pop()
-        new_watershed = set([loc_min])  # must have unique elements
-        temp = set([loc_min])
 
-        while temp:  # while a region is not finished
-            index = temp.pop()
-            nbrs_of_loc_min = set(min_neighbors[index])
-            new_minimums = nbrs_of_loc_min.difference(new_watershed)
-            temp.update(new_minimums)
-            new_watershed.update(new_minimums)
-            minimum_indices = minimum_indices.difference(new_minimums)
 
-        watersheds[len(watersheds)] = new_watershed
-
-    return watersheds
 
     """
     GET BACK TO THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
