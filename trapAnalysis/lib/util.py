@@ -129,7 +129,7 @@ def get_padded_neighbors(indices, num_of_nodes_x, num_of_nodes_y):
     """
 
     nr_of_indices = len(indices)
-    neighbors = np.empty((nr_of_indices, 8), dtype=object)
+    neighbors = np.ones((nr_of_indices, 8), dtype=int) * -1
 
     for i in range(nr_of_indices):
         neighbors_index = np.asarray(get_neighbors_boundary(indices[i], num_of_nodes_x, num_of_nodes_y))
@@ -155,11 +155,11 @@ def get_neighbors_for_indices_array(indices, num_of_cols, num_of_rows):
     nbrs_interior = get_neighbors_for_interior_indices(indices[are_interior], num_of_cols)
     nbrs_boundary = get_padded_neighbors(indices[are_boundary], num_of_cols, num_of_rows)
 
-    nbrs = np.concatenate((np.column_stack((indices[are_interior], nbrs_interior)), np.column_stack((indices[are_boundary], nbrs_boundary))))
+    nbrs = np.concatenate((np.column_stack((indices[are_interior], nbrs_interior)),
+                           np.column_stack((indices[are_boundary], nbrs_boundary))))
     nbrs = nbrs[np.argsort(nbrs[:, 0])][:, 1:]  # Remove the column used for sorting
 
     return nbrs
-
 
 
 def is_boundary_node(node_index, num_of_cols, num_of_rows):
