@@ -28,6 +28,7 @@ def get_index_from_row_and_col(row_number, col_number, number_of_cols):
     """
 
     node_index = col_number + row_number * number_of_cols
+
     return node_index
 
 
@@ -119,6 +120,8 @@ def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
 
 
 
+def get_neighbors_dictionary():
+    # TEST TO SEE IF HAVING NEIGHBORS AS A SET IS EASIER TO WORK WITH, COMPARED TO ARRAYS
 
 
 
@@ -293,9 +296,10 @@ def get_downslope_indices_sides(num_of_cols, num_of_rows, heights):
     neighbors = np.array(get_neighbors_for_indices(indices, num_of_cols, num_of_rows))
 
     dist_to_neighbors_top = np.array([10, 10, math.sqrt(200), 10, math.sqrt(200)])
-    dist_to_neighbors_bottom = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10])
-    dist_to_neighbors_left = np.array([10, math.sqrt(200), 10, 10, math.sqrt(200)])
-    dist_to_neighbors_right = np.array([math.sqrt(200), 10, 10, math.sqrt(200), 10])
+    dist_to_neighbors_right = np.roll(dist_to_neighbors_top, 1)
+    dist_to_neighbors_left = np.roll(dist_to_neighbors_top, 2)
+    dist_to_neighbors_bottom = np.roll(dist_to_neighbors_top, 3)
+
     distance_top = np.tile(dist_to_neighbors_top, (len(top), 1))
     distance_bottom = np.tile(dist_to_neighbors_bottom, (len(bottom), 1))
     distance_left = np.tile(dist_to_neighbors_left, (len(left), 1))
