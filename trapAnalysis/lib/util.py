@@ -119,10 +119,33 @@ def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
+def get_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y):
+    """
+    Returns a numpy array with eight elements for each node. If the node is a boundary node, many of these will be None.
+    :param indices: An array of indices
+    :param num_of_nodes_x: Number of columns in the 2d-grid
+    :param num_of_nodes_y: Number of rows in the 2d-grid
+    :return neighbors: A 2d numpy array with the neighbors for all the nodes. The boundary nodes are padded with None
+    """
 
-def get_neighbors_dictionary():
-    # TEST TO SEE IF HAVING NEIGHBORS AS A SET IS EASIER TO WORK WITH, COMPARED TO ARRAYS
+    nr_of_indices = len(indices)
+    neighbors = np.empty((nr_of_indices, 8), dtype=object)
 
+    for i in range(nr_of_indices):
+        neighbors_index = np.asarray(get_neighbors_boundary(indices[i], num_of_nodes_x, num_of_nodes_y))
+        neighbors[i, 0:len(neighbors_index)] = neighbors_index
+
+    return neighbors
+
+
+def get_neighbors_for_indices(indices, num_of_cols, num_of_rows):
+
+    # Figure out which are boundary and which are interior
+    are_boundary = indices[are_boundary_nodes_bool(indices, num_of_cols, num_of_rows)]
+    are_interior = indices[are_boundary_nodes_bool(indices, num_of_cols, num_of_rows) == False]
+    nbrs_interior = get_neighbors_for_interior_indices(are_interior)
+    nbrs_boundary = get_neighbors_for_indices(are_boundary, num_of_cols, num_of_rows)
+    # We need nbrs_boundary in another format, pad with None
 
 
 
@@ -189,6 +212,21 @@ def is_boundary_node(node_index, num_of_cols, num_of_rows):
     is_boundary = is_top or is_left or is_right or is_bottom
 
     return is_boundary
+
+
+def are_boundary_nodes_bool(indices, num_of_cols, num_of_rows):
+    """
+    Given an array of indices, returns an array with true for boundary nodes, false for interior nodes
+    :param indices: Array of indices
+    :param num_of_cols: Number of columns in 2d-grid
+    :param num_of_rows: Number of rows in 2d-grid
+    :return bool_arr: An array with True or False. True if element in indices is a boundary node, false if not.
+    """
+
+    bool_arr = (indices < num_of_cols) | (indices % num_of_cols == 0)| ((indices + 1) % num_of_cols == 0) \
+               | ((num_of_cols * num_of_rows - num_of_cols) <= indices) & (indices < num_of_cols * num_of_rows)
+
+    return bool_arr
 
 
 def are_boundary_nodes(indices, num_of_cols, num_of_rows):
