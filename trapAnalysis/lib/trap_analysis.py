@@ -45,12 +45,12 @@ def get_node_endpoints_alternative(num_of_cols, num_of_rows, downslope_neighbors
     terminal_nodes[indices_node_is_minimum] = indices_node_is_minimum
 
     # The downslope nodes are minimums
-    not_local_minimums = np.where(downslope_neighbors != -1)[0]
-    indices_to_check = downslope_neighbors[not_local_minimums]
-    downslope_is_minimum = np.where(downslope_neighbors[indices_to_check] == -1)
-    values = indices_to_check[downslope_is_minimum]
-    indices = not_local_minimums[downslope_is_minimum]
-    terminal_nodes[indices] = values
+    #not_local_minimums = np.where(downslope_neighbors != -1)[0]
+    #indices_to_check = downslope_neighbors[not_local_minimums]
+    #downslope_is_minimum = np.where(downslope_neighbors[indices_to_check] == -1)
+    #values = indices_to_check[downslope_is_minimum]
+    #indices = not_local_minimums[downslope_is_minimum]
+    #terminal_nodes[indices] = values
 
     for i in range(num_of_nodes):
         if terminal_nodes[i] is None:
@@ -95,7 +95,9 @@ def get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors):
     while num_of_end_nodes_inserted > 0:
         num_of_end_nodes_inserted, terminal_nodes = update_terminal_nodes(terminal_nodes, downslope_neighbors,
                                                                           indices_in_terminal)
-
+    # DO WE REALLY NEED BOTH TERMINAL NODES AND INDICES_IN_TERMINAL????????????????????????????????????????????????
+    # YES, BECAUSE WE CAN HAVE 0 (FALSE) AS AN ENDPOINT...?
+    # POSSIBLE TO WORK AROUND THIS PROBLEM, I THINK
     return terminal_nodes
 
 
