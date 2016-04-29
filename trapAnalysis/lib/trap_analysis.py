@@ -44,14 +44,6 @@ def get_node_endpoints_alternative(num_of_cols, num_of_rows, downslope_neighbors
     indices_node_is_minimum = np.where(downslope_neighbors == -1)[0]
     terminal_nodes[indices_node_is_minimum] = indices_node_is_minimum
 
-    # The downslope nodes are minimums
-    #not_local_minimums = np.where(downslope_neighbors != -1)[0]
-    #indices_to_check = downslope_neighbors[not_local_minimums]
-    #downslope_is_minimum = np.where(downslope_neighbors[indices_to_check] == -1)
-    #values = indices_to_check[downslope_is_minimum]
-    #indices = not_local_minimums[downslope_is_minimum]
-    #terminal_nodes[indices] = values
-
     for i in range(num_of_nodes):
         if terminal_nodes[i] is None:
 
@@ -199,3 +191,8 @@ def get_nodes_in_watersheds(watersheds, indices_to_endpoints):
         nodes_in_watershed[key] = temp_all_nodes
 
     return nodes_in_watershed
+
+
+#def combine_all_minimums_numpy(indices_minimums):
+
+    # Get all neighbors
