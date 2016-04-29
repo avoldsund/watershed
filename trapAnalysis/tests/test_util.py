@@ -359,3 +359,16 @@ def test_get_downslope_neighbors():
 
     assert np.array_equal(downslope_neighbors, result_downslope_neighbors)
 
+
+def test_get_downslope_neighbors_large():
+
+    num_of_cols = 6
+    num_of_rows = 5
+
+    heights = np.array([5, 7, 8, 7, 6, 0, 7, 2, 10, 10, 7, 6, 7, 2, 4, 5, 5, 4, 7, 7, 3.9, 4, 0, 0, 6, 5, 4, 4, 0, 0])
+    result_downslope_neighbors = np.array([7, 7, 7, 4, 5, -1, 7, -1, 7, 15, 5, 5, 13, -1, 13, 22, 22,
+                                           23, 13, 13, 13, 22, -1, -1, 25, 26, 20, 28, -1, -1])
+
+    downslope_neighbors = util.get_downslope_indices(num_of_cols, num_of_rows, heights)
+
+    assert np.array_equal(downslope_neighbors, result_downslope_neighbors)

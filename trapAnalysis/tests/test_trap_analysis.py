@@ -7,6 +7,7 @@ import util
 import networkx
 from networkx.algorithms.components.connected import connected_components
 
+
 def test_get_node_endpoints_one_min():
 
     num_of_cols = 3
@@ -57,12 +58,12 @@ def test_get_node_endpoints_four_mins_rectangular():
 
 def test_get_indices_leading_to_endpoints():
 
-    endpoints = np.array([7, 7, 5, 5, 5, 5, 7, 7, 13, 22, 5, 5, 13, 13, 13, 22,
+    endpoints = np.array([7, 7, 7, 5, 5, 5, 7, 7, 7, 22, 5, 5, 13, 13, 13, 22,
                           22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
     # unique_endpoints = np.array([5, 7, 13, 22, 23, 28, 29])
-    result_indices = [np.array([2, 3, 4, 5, 10, 11]),
-                      np.array([0, 1, 6, 7]),
-                      np.array([8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+    result_indices = [np.array([3, 4, 5, 10, 11]),
+                      np.array([0, 1, 2, 6, 7, 8]),
+                      np.array([12, 13, 14, 18, 19, 20, 24, 25, 26]),
                       np.array([9, 15, 16, 21, 22]),
                       np.array([17, 23]),
                       np.array([27, 28]),
@@ -98,26 +99,18 @@ def test_get_watersheds():
     assert watersheds == result_watersheds
 
 
-def test_get_nodes_to_watersheds():
+def test_get_nodes_to_watersheds_set():
 
     watersheds = {0: {5}, 1: {7, 13}, 2: {22, 23, 28, 29}}
-    indices_to_endpoints = {5: {2, 3, 4, 5, 10, 11}, 7: {0, 1, 6, 7},
-                            13: {8, 12, 13, 14, 18, 19, 20, 24, 25, 26},
+    indices_to_endpoints = {5: {3, 4, 5, 10, 11}, 7: {0, 1, 2, 6, 7, 8},
+                            13: {12, 13, 14, 18, 19, 20, 24, 25, 26},
                             22: {9, 15, 16, 21, 22}, 23: {17, 23},
                             28: {27, 28}, 29: {29}}
-    """
-    [np.array([2, 3, 4, 5, 10, 11]),
-                  np.array([0, 1, 6, 7]),
-                  np.array([8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
-                  np.array([9, 15, 16, 21, 22]),
-                  np.array([17, 23]),
-                  np.array([27, 28]),
-                  np.array([29])]
-    """
-    result_nodes_in_watershed = {0: {2, 3, 4, 5, 10, 11}, 1: {0, 1, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26},
+
+    result_nodes_in_watershed = {0: {3, 4, 5, 10, 11}, 1: {0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26},
                                  2: {9, 15, 16, 17, 21, 22, 23, 27, 28, 29}}
 
-    nodes_in_watershed = trap_analysis.get_nodes_in_watersheds(watersheds, indices_to_endpoints)
+    nodes_in_watershed = trap_analysis.get_nodes_in_watersheds_set(watersheds, indices_to_endpoints)
 
     assert nodes_in_watershed == result_nodes_in_watershed
 
@@ -135,6 +128,42 @@ def test_get_watersheds_array():
                          [22, 23, 28, -1, -1, -1, -1, -1]])
 
     connections = [{5}, {7, 13}, {22, 23, 28, 29}]
-    result_connections = connected_components(trap_analysis.combine_all_minimums_numpy(indices, num_of_cols, num_of_rows))
+    result_connections = trap_analysis.combine_all_minimums_numpy(indices, num_of_cols, num_of_rows)
 
     assert sorted(connections) == sorted(result_connections)
+
+
+def test_get_nodes_in_watersheds():
+
+    num_of_cols = 6
+    num_of_rows = 5
+    indices = np.array([5, 7, 13, 22, 23, 28, 29])
+    neighbors = np.array([[4, 10, 11, -1, -1, -1, -1, -1],
+                         [0, 1, 2, 6, 8, 12, 13, 14],
+                         [6, 7, 8, 12, 14, 18, 19, 20],
+                         [15, 16, 17, 21, 23, 27, 28, 29],
+                         [16, 17, 22, 28, 29, -1, -1, -1],
+                         [21, 22, 23, 27, 29, -1, -1, -1],
+                         [22, 23, 28, -1, -1, -1, -1, -1]])
+    endpoints = np.array([7, 7, 7, 5, 5, 5, 7, 7, 7, 22, 5, 5, 13, 13, 13, 22,
+                          22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
+    combined_minimums = [{5}, {7, 13}, {22, 23, 28, 29}]
+    watersheds = [[3, 4, 5, 10, 11], [0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26],
+                  [9, 15, 16, 17, 21, 22, 23, 27, 28, 29]]
+
+    result_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, combined_minimums)
+
+    assert sorted(watersheds) == sorted(result_watersheds)
+
+
+def test_get_watersheds():
+
+    num_of_cols = 6
+    num_of_rows = 5
+    heights = np.array([5, 7, 8, 7, 6, 0, 7, 2, 10, 10, 7, 6, 7, 2, 4, 5, 5, 4, 7, 7, 3.9, 4, 0, 0, 6, 5, 4, 4, 0, 0])
+    nodes_in_watersheds = trap_analysis.get_watersheds(heights, num_of_cols, num_of_rows)
+
+    result_nodes_in_watersheds = [[3, 4, 5, 10, 11], [0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26],
+                                  [9, 15, 16, 17, 21, 22, 23, 27, 28, 29]]
+
+    assert sorted(nodes_in_watersheds) == sorted(result_nodes_in_watersheds)
