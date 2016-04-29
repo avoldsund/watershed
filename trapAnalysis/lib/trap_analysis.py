@@ -4,6 +4,7 @@ import numpy as np
 import util
 import networkx
 from networkx.algorithms.components.connected import connected_components
+import matplotlib.pyplot as plt
 
 class Landscape:
 
@@ -103,8 +104,6 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
     The method finds all indices which haven't gotten end nodes yet, and takes a step in the down slope direction. If
     the down slope is a local minimum, these indices will now get end points in terminal_nodes. These end points will be
     found from terminal_nodes.
-    :param num_of_cols: Number of nodes is x-direction
-    :param num_of_rows: Number of nodes in y-direction
     :param downslope_neighbors: Indices of the downslope neighbor for each node. Equal to -1 if the node is a minimum.
     :return terminal_nodes: The indices of the end nodes
     """
@@ -144,6 +143,7 @@ def get_indices_leading_to_endpoints(endpoints):
 
 def combine_all_minimums(minimum_indices, min_neighbors):
     # THIS IS A TEST USING SETS, NOT SURE IF THIS IS FINAL SOLUTION. IF IT IS, MUCH MUST BE REWRITTEN!
+    # THIS FUNCTION IS OBSOLETE NOW, USING NUMPY INSTEAD
     """
     The method will combine all the minimums in a landscape into larger local minimums. It will return a dictionary
     with the key being the region number, and the value being all indices in the region. The method will be used as
@@ -174,7 +174,7 @@ def combine_all_minimums(minimum_indices, min_neighbors):
     return watersheds
 
 
-def get_nodes_in_watersheds(watersheds, indices_to_endpoints):
+def get_nodes_in_watersheds_set(watersheds, indices_to_endpoints):
     """
     The function returns a dictionary with key being the watershed number, and value being a set of all indices that
     terminate in the watershed. The length of nodes_in_watershed will be the number of watersheds in the landscape.
@@ -198,6 +198,13 @@ def get_nodes_in_watersheds(watersheds, indices_to_endpoints):
 
 
 def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
+    """
+    Returns a list of sets where each set is a cluster of minimums
+    :param indices_minimums: The indices of the minimums in the landscape
+    :param num_of_cols: Number of columns in the 2d-grid
+    :param num_of_rows: Number of rows in the 2d-grid
+    :return minimums_in_watershed: A combination of all minimums into larger minimums
+    """
 
     neighbors = util.get_neighbors_for_indices_array(indices_minimums, num_of_cols, num_of_rows)
     neighbor_is_a_min_bool = np.in1d(neighbors, indices_minimums)
@@ -216,4 +223,51 @@ def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
         edges = zip(l[:-1], l[1:])
         graph.add_edges_from(edges)
 
-    return graph
+    minimums_in_watershed = networkx.connected_components(graph)
+    #networkx.draw(graph)
+    #plt.show()
+    print minimums_in_watershed
+
+    return minimums_in_watershed
+
+
+def get_nodes_in_watersheds(endpoints, combined_minimums):
+    """
+    Returns all watersheds and the nodes within them
+    :param endpoints: If you follow the downslope until you hit a minimum, that's the node's endpoint
+    :param combined_minimums: A list of sets, where each set is a cluster of minimums
+    :return nodes_in_watersheds: All watersheds and their corresponding nodes
+    """
+
+    nodes_in_watersheds = []
+    indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
+    minimum_indices = indices_leading_to_endpoints[0]
+
+    for i in range(len(combined_minimums)):
+        ws = []
+        for minimum in combined_minimums[i]:
+            row_index = np.where(minimum_indices == minimum)[0]
+            nodes_to_minimum = indices_leading_to_endpoints[1][row_index].tolist()
+            ws.extend(nodes_to_minimum)
+        nodes_in_watersheds.append(sorted(ws))
+
+    return sorted(nodes_in_watersheds)
+
+
+def get_watersheds(heights, num_of_cols, num_of_rows):
+    """
+    Returns all watersheds in an area given the heights of the landscape
+    :param heights: z-coordinate for all indices
+    :param num_of_cols: Number of grid points in x-direction
+    :param num_of_rows: Number of grid points in y-direction
+    :return nodes_in_watersheds: List of lists where each list is a watershed and its nodes
+    """
+
+    downslope_neighbors = util.get_downslope_indices(num_of_cols, num_of_rows, heights)
+    endpoints = get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors)
+    minimum_indices = np.where(downslope_neighbors == -1)[0]
+
+    minimums_in_each_watershed = sorted(combine_all_minimums_numpy(minimum_indices, num_of_cols, num_of_rows))
+    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
+
+    return nodes_in_watersheds
