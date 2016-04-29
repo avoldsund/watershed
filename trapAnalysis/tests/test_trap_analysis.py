@@ -58,7 +58,7 @@ def test_get_indices_leading_to_endpoints():
 
     endpoints = np.array([7, 7, 5, 5, 5, 5, 7, 7, 13, 22, 5, 5, 13, 13, 13, 22,
                           22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
-    unique_endpoints = np.array([5, 7, 13, 22, 23, 28, 29])
+    # unique_endpoints = np.array([5, 7, 13, 22, 23, 28, 29])
     result_indices = [np.array([2, 3, 4, 5, 10, 11]),
                       np.array([0, 1, 6, 7]),
                       np.array([8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
@@ -92,7 +92,7 @@ def test_get_watersheds():
                  28: set([21, 22, 23, 27, 29]), 29: set([22, 23, 28])}
     result_watersheds = {0: set([5]), 1: set([7, 13]), 2: set([22, 23, 28, 29])}
     watersheds = trap_analysis.combine_all_minimums(minimum_indices, neighbors)
-    diff = set(watersheds.keys()) - set(result_watersheds.keys())
+    # diff = set(watersheds.keys()) - set(result_watersheds.keys())
 
     assert watersheds == result_watersheds
 
