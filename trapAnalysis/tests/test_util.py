@@ -107,6 +107,23 @@ def test_get_neighbors_boundary_skinny():
     assert cmp(neighbors, result_neighbors) == 0
 
 
+def test_get_neighbors_for_indices_array():
+
+    num_of_nodes_x = 6
+    num_of_nodes_y = 5
+    indices = np.array([5, 23, 28, 29])
+    neighbors = np.array([[4, 10, 11, None, None, None, None, None],
+                         [16, 17, 22, 28, 29, None, None, None],
+                         [21, 22, 23, 27, 29, None, None, None],
+                         [22, 23, 28, None, None, None, None, None]])
+
+    result_neighbors = util.get_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y)
+
+    print 'Result neighbors: ', result_neighbors
+    print 'Neighbors:', neighbors
+    assert np.array_equal(neighbors, result_neighbors)
+
+
 def test_is_boundary_node_square():
 
     num_of_cols = 3
@@ -169,6 +186,31 @@ def test_are_boundary_nodes():
     boundary_indices = util.are_boundary_nodes(indices, num_of_cols, num_of_rows)
 
     assert np.array_equal(boundary_indices, result_boundary_indices)
+
+
+def test_are_boundary_nodes_2():
+
+    num_of_cols = 6
+    num_of_rows = 5
+
+    indices = np.array([5, 7, 13, 22, 23, 28, 29])
+    result_boundary_indices = np.array([5, 23, 28, 29])
+    boundary_indices = util.are_boundary_nodes(indices, num_of_cols, num_of_rows)
+
+    assert np.array_equal(boundary_indices, result_boundary_indices)
+
+
+def test_are_boundary_bool():
+
+    num_of_cols = 6
+    num_of_rows = 5
+
+    indices = np.array([5, 7, 13, 22, 23, 28, 29])
+    result_boundary_indices = np.array([True, False, False, False, True, True, True])
+    boundary_indices = util.are_boundary_nodes_bool(indices, num_of_cols, num_of_rows)
+
+    assert np.array_equal(boundary_indices, result_boundary_indices)
+
 
 
 def test_get_boundary_indices_square():
