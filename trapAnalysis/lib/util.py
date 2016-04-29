@@ -119,7 +119,7 @@ def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
-def get_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y):
+def get_padded_neighbors(indices, num_of_nodes_x, num_of_nodes_y):
     """
     Returns a numpy array with eight elements for each node. If the node is a boundary node, many of these will be None.
     :param indices: An array of indices
@@ -138,61 +138,28 @@ def get_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y):
     return neighbors
 
 
-def get_neighbors_for_indices(indices, num_of_cols, num_of_rows):
+def get_neighbors_for_indices_array(indices, num_of_cols, num_of_rows):
+    """
+    Returns the neighbors for a set of indices. All nodes will have 8 elements in their neighbor array, but boundary
+    nodes are padded with None.
+    :param indices: An array of indices
+    :param num_of_cols: Number of columns in the 2d-grid
+    :param num_of_rows: Number of rows in the 2d-grid
+    :return nbrs: The 2d-array with the neighbors for all the indices
+    """
 
     # Figure out which are boundary and which are interior
-    are_boundary = indices[are_boundary_nodes_bool(indices, num_of_cols, num_of_rows)]
-    are_interior = indices[are_boundary_nodes_bool(indices, num_of_cols, num_of_rows) == False]
-    nbrs_interior = get_neighbors_for_interior_indices(are_interior)
-    nbrs_boundary = get_neighbors_for_indices(are_boundary, num_of_cols, num_of_rows)
-    # We need nbrs_boundary in another format, pad with None
+    are_boundary = np.where(are_boundary_nodes_bool(indices, num_of_cols, num_of_rows) == True)[0]
+    are_interior = np.where(are_boundary_nodes_bool(indices, num_of_cols, num_of_rows) == False)[0]
 
+    nbrs_interior = get_neighbors_for_interior_indices(indices[are_interior], num_of_cols)
+    nbrs_boundary = get_padded_neighbors(indices[are_boundary], num_of_cols, num_of_rows)
 
+    nbrs = np.concatenate((np.column_stack((indices[are_interior], nbrs_interior)), np.column_stack((indices[are_boundary], nbrs_boundary))))
+    nbrs = nbrs[np.argsort(nbrs[:, 0])][:, 1:]  # Remove the column used for sorting
 
-    """
-    GET BACK TO THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    return nbrs
 
-    # Need the neighbors of each minimum points. To do this, we must know which of them are
-    # Getting neighbors for boundary and interior, and padding boundary corners
-    total_nodes = num_of_nodes_x * num_of_nodes_y
-
-    # Getting the indices that are boundary indices
-    boundary_indices = are_boundary_nodes(minimum_indices, num_of_nodes_x, num_of_nodes_y)
-
-    corners = np.array([0, num_of_nodes_x - 1, total_nodes - num_of_nodes_x,
-                        total_nodes - 1])
-    # Getting the indices that are corner indices
-    corner_indices = np.where(boundary_indices == corners[0] or boundary_indices == corners[1] or
-                              boundary_indices == corners[2] or boundary_indices == corners[3])[0]
-    for corner in corner_indices:
-        boundary_indices[corner].extend([-1, -1])
-
-    interior_indices = np.setdiff1d(minimum_indices, boundary_indices, assume_unique=True)
-
-    boundary_neighbors = np.column_stack((boundary_indices, get_neighbors_for_indices(boundary_indices)))
-    interior_neighbors = np.column_stack((interior_indices,
-                                          get_neighbors_for_interior_indices(interior_indices, num_of_nodes_x)))
-    neighbors = np.concatenate((boundary_neighbors, interior_neighbors))
-    neighbors = neighbors[np.argsort(neighbors[:, 0])]
-
-    watersheds = []
-    intersections = []
-    for i in range(len(minimum_indices)):
-        intersections.append(np.intersect1d(minimum_indices, neighbors[i]))
-
-    for i in range(len(minimum_indices)):
-        watershed = []
-        poplist = [minimum_indices[i]]
-        watershed.append(minimum_indices[i])
-        while poplist:
-            local_min = poplist.pop()
-            local_min_index = minimum_indices.index(local_min)
-            poplist.extend(neighbors[local_min_index])
-            watershed.extend(neighbors[local_min_index])
-        watersheds.append(watershed)
-
-    return watersheds
-    """
 
 
 def is_boundary_node(node_index, num_of_cols, num_of_rows):

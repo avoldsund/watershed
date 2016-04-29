@@ -117,11 +117,27 @@ def test_get_neighbors_for_indices_array():
                          [21, 22, 23, 27, 29, None, None, None],
                          [22, 23, 28, None, None, None, None, None]])
 
-    result_neighbors = util.get_neighbors_for_indices_array(indices, num_of_nodes_x, num_of_nodes_y)
+    result_neighbors = util.get_padded_neighbors(indices, num_of_nodes_x, num_of_nodes_y)
 
-    print 'Result neighbors: ', result_neighbors
-    print 'Neighbors:', neighbors
     assert np.array_equal(neighbors, result_neighbors)
+
+
+def test_get_neighbors_for_indices():
+
+    num_of_cols = 6
+    num_of_rows = 5
+    indices = np.array([5, 7, 13, 22, 23, 28, 29])
+    neighbors = np.array([[4, 10, 11, None, None, None, None, None],
+                         [0, 1, 2, 6, 8, 12, 13, 14],
+                         [6, 7, 8, 12, 14, 18, 19, 20],
+                         [15, 16, 17, 21, 23, 27, 28, 29],
+                         [16, 17, 22, 28, 29, None, None, None],
+                         [21, 22, 23, 27, 29, None, None, None],
+                         [22, 23, 28, None, None, None, None, None]])
+
+    result_neighbors = util.get_neighbors_for_indices_array(indices, num_of_cols, num_of_rows)
+
+    assert np.array_equal(result_neighbors, neighbors)
 
 
 def test_is_boundary_node_square():
