@@ -4,7 +4,8 @@ sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util'
 import trap_analysis
 import numpy as np
 import util
-
+import networkx
+from networkx.algorithms.components.connected import connected_components
 
 def test_get_node_endpoints_one_min():
 
@@ -86,11 +87,11 @@ def test_get_indices_leading_to_endpoints():
 
 def test_get_watersheds():
 
-    minimum_indices = set([5, 7, 13, 22, 23, 28, 29])
-    neighbors = {5: set([4, 10, 11]), 7: set([0, 1, 2, 6, 8, 12, 13, 14]), 13: set([6, 7, 8, 12, 14, 18, 19, 20]),
-                 22: set([15, 16, 17, 21, 23, 27, 28, 29]), 23: set([16, 17, 22, 28, 29]),
-                 28: set([21, 22, 23, 27, 29]), 29: set([22, 23, 28])}
-    result_watersheds = {0: set([5]), 1: set([7, 13]), 2: set([22, 23, 28, 29])}
+    minimum_indices = {5, 7, 13, 22, 23, 28, 29}
+    neighbors = {5: {4, 10, 11}, 7: {0, 1, 2, 6, 8, 12, 13, 14}, 13: {6, 7, 8, 12, 14, 18, 19, 20},
+                 22: {15, 16, 17, 21, 23, 27, 28, 29}, 23: {16, 17, 22, 28, 29},
+                 28: {21, 22, 23, 27, 29}, 29: {22, 23, 28}}
+    result_watersheds = {0: {5}, 1: {7, 13}, 2: {22, 23, 28, 29}}
     watersheds = trap_analysis.combine_all_minimums(minimum_indices, neighbors)
     # diff = set(watersheds.keys()) - set(result_watersheds.keys())
 
@@ -99,11 +100,11 @@ def test_get_watersheds():
 
 def test_get_nodes_to_watersheds():
 
-    watersheds = {0: set([5]), 1: set([7, 13]), 2: set([22, 23, 28, 29])}
-    indices_to_endpoints = {5: set([2, 3, 4, 5, 10, 11]), 7: set([0, 1, 6, 7]),
-                            13: set([8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
-                            22: set([9, 15, 16, 21, 22]), 23: set([17, 23]),
-                            28: set([27, 28]), 29: set([29])}
+    watersheds = {0: {5}, 1: {7, 13}, 2: {22, 23, 28, 29}}
+    indices_to_endpoints = {5: {2, 3, 4, 5, 10, 11}, 7: {0, 1, 6, 7},
+                            13: {8, 12, 13, 14, 18, 19, 20, 24, 25, 26},
+                            22: {9, 15, 16, 21, 22}, 23: {17, 23},
+                            28: {27, 28}, 29: {29}}
     """
     [np.array([2, 3, 4, 5, 10, 11]),
                   np.array([0, 1, 6, 7]),
@@ -113,9 +114,27 @@ def test_get_nodes_to_watersheds():
                   np.array([27, 28]),
                   np.array([29])]
     """
-    result_nodes_in_watershed = {0: set([2, 3, 4, 5, 10, 11]), 1: set([0, 1, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
-                                 2: set([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])}
+    result_nodes_in_watershed = {0: {2, 3, 4, 5, 10, 11}, 1: {0, 1, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26},
+                                 2: {9, 15, 16, 17, 21, 22, 23, 27, 28, 29}}
 
     nodes_in_watershed = trap_analysis.get_nodes_in_watersheds(watersheds, indices_to_endpoints)
 
     assert nodes_in_watershed == result_nodes_in_watershed
+
+def test_get_watersheds_array():
+
+    num_of_cols = 6
+    num_of_rows = 5
+    indices = np.array([5, 7, 13, 22, 23, 28, 29])
+    neighbors = np.array([[4, 10, 11, -1, -1, -1, -1, -1],
+                         [0, 1, 2, 6, 8, 12, 13, 14],
+                         [6, 7, 8, 12, 14, 18, 19, 20],
+                         [15, 16, 17, 21, 23, 27, 28, 29],
+                         [16, 17, 22, 28, 29, -1, -1, -1],
+                         [21, 22, 23, 27, 29, -1, -1, -1],
+                         [22, 23, 28, -1, -1, -1, -1, -1]])
+
+    connections = [{5}, {7, 13}, {22, 23, 28, 29}]
+    result_connections = connected_components(trap_analysis.combine_all_minimums_numpy(indices, num_of_cols, num_of_rows))
+
+    assert sorted(connections) == sorted(result_connections)

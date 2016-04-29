@@ -112,28 +112,28 @@ def test_get_neighbors_for_indices_array():
     num_of_nodes_x = 6
     num_of_nodes_y = 5
     indices = np.array([5, 23, 28, 29])
-    neighbors = np.array([[4, 10, 11, None, None, None, None, None],
-                         [16, 17, 22, 28, 29, None, None, None],
-                         [21, 22, 23, 27, 29, None, None, None],
-                         [22, 23, 28, None, None, None, None, None]])
+    neighbors = np.array([[4, 10, 11, -1, -1, -1, -1, -1],
+                         [16, 17, 22, 28, 29, -1, -1, -1],
+                         [21, 22, 23, 27, 29, -1, -1, -1],
+                         [22, 23, 28, -1, -1, -1, -1, -1]])
 
     result_neighbors = util.get_padded_neighbors(indices, num_of_nodes_x, num_of_nodes_y)
 
     assert np.array_equal(neighbors, result_neighbors)
 
 
-def test_get_neighbors_for_indices():
+def test_get_neighbors_for_indices_array():
 
     num_of_cols = 6
     num_of_rows = 5
     indices = np.array([5, 7, 13, 22, 23, 28, 29])
-    neighbors = np.array([[4, 10, 11, None, None, None, None, None],
+    neighbors = np.array([[4, 10, 11, -1, -1, -1, -1, -1],
                          [0, 1, 2, 6, 8, 12, 13, 14],
                          [6, 7, 8, 12, 14, 18, 19, 20],
                          [15, 16, 17, 21, 23, 27, 28, 29],
-                         [16, 17, 22, 28, 29, None, None, None],
-                         [21, 22, 23, 27, 29, None, None, None],
-                         [22, 23, 28, None, None, None, None, None]])
+                         [16, 17, 22, 28, 29, -1, -1, -1],
+                         [21, 22, 23, 27, 29, -1, -1, -1],
+                         [22, 23, 28, -1, -1, -1, -1, -1]])
 
     result_neighbors = util.get_neighbors_for_indices_array(indices, num_of_cols, num_of_rows)
 
