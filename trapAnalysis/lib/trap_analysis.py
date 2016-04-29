@@ -1,5 +1,9 @@
+import sys
+sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
 import numpy as np
-
+import util
+import networkx
+from networkx.algorithms.components.connected import connected_components
 
 class Landscape:
 
@@ -154,8 +158,8 @@ def combine_all_minimums(minimum_indices, min_neighbors):
 
     while minimum_indices:  # while more local minimums not assigned to a region
         loc_min = minimum_indices.pop()
-        new_watershed = set([loc_min])  # must have unique elements
-        temp = set([loc_min])
+        new_watershed = {loc_min}  # must have unique elements
+        temp = {loc_min}
 
         while temp:  # while a region is not finished
             index = temp.pop()
@@ -193,6 +197,23 @@ def get_nodes_in_watersheds(watersheds, indices_to_endpoints):
     return nodes_in_watershed
 
 
-#def combine_all_minimums_numpy(indices_minimums):
+def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
 
-    # Get all neighbors
+    neighbors = util.get_neighbors_for_indices_array(indices_minimums, num_of_cols, num_of_rows)
+    neighbor_is_a_min_bool = np.in1d(neighbors, indices_minimums)
+    neighbor_is_a_min_bool = neighbor_is_a_min_bool.reshape(len(indices_minimums), 8)
+    min_neighbors = np.multiply(neighbors, neighbor_is_a_min_bool).tolist()
+
+    for i in range(len(indices_minimums)):
+        min_neighbors[i] = [value for value in min_neighbors[i] if value != 0]
+        min_neighbors[i].append(indices_minimums[i])
+
+    min_neighbors = filter(None, min_neighbors)  # Remove the lists without neighbors being minimums
+
+    graph = networkx.Graph()
+    for l in min_neighbors:
+        graph.add_nodes_from(l)
+        edges = zip(l[:-1], l[1:])
+        graph.add_edges_from(edges)
+
+    return graph
