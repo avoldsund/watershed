@@ -10,8 +10,8 @@ def plot_landscape(landscape):
     """
     x_grid = np.linspace(landscape.x_min + landscape.step_size, landscape.x_max, landscape.num_of_nodes_x)
     y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y)
-    x, y = np.meshgrid(x_grid, y_grid)
-    z = landscape.arr
+    x, y = np.meshgrid(x_grid[0::8], y_grid[0::8])
+    z = landscape.arr[0::8, 0::8]
 
     cmap = plt.get_cmap('terrain')
     v = np.linspace(min(landscape.coordinates[:, 2]), max(landscape.coordinates[:, 2]), 100, endpoint=True)
@@ -21,6 +21,7 @@ def plot_landscape(landscape):
     plt.title('Height of the landscape')
     plt.xlabel('x')
     plt.ylabel('y')
+    plt.rcParams.update({'font.size': 20})
     plt.show()
 
 
