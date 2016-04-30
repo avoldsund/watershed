@@ -11,44 +11,38 @@ import util
 import numpy as np
 import trap_analysis
 import time
+import cPickle
+from tempfile import TemporaryFile
 
 # Linux:
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
 # Windows:
 # file_name = 'C:\Users\Anders O. Voldsund\Dropbox\watershed\\trapAnalysis\lib\\anders_hoh.tiff'
 
-#landscape = load_geotiff.get_landscape(file_name)
-
-#print 'Done importing landscape'
-#nx = landscape.num_of_nodes_x
-#ny = landscape.num_of_nodes_y  # 82 seconds for /8, 225 seconds for /4 OR IMPLEMENT NEW ONE WITH 31.6 /1!!!!!!!
-#total = nx * ny
-
-#downslope_neighbors = util.get_downslope_indices(nx, ny, landscape.coordinates[0:total, 2])
-
-#start = time.time()
-#terminal_nodes = trap_analysis.get_node_endpoints(nx, ny, downslope_neighbors)
-#end = time.time()
-#time_taken = end - start
-#print time_taken
+landscape = load_geotiff.get_landscape(file_name)
 
 
-num_of_cols = 4000
-num_of_rows = 4000
+#downslope_neighbors = util.get_downslope_indices(landscape.num_of_nodes_x, landscape.num_of_nodes_y,
+#                                                 landscape.coordinates[:, 2])
+#downslopeNeighbors = TemporaryFile()  # downslopeNeighbors is the outfile
+#np.save('downslopeNeighbors', downslope_neighbors)
+downslope_neighbors = np.load('downslopeNeighbors.npy')
 
-indices = np.arange(0, num_of_rows * num_of_cols, 1)
+#endpoints = trap_analysis.get_node_endpoints(landscape.num_of_nodes_x, landscape.num_of_nodes_y, downslope_neighbors)
+#endpoints = TemporaryFile()
+#np.save('endpoints', endpoints)
+endpoints = np.load('endpoints.npy')
 
-boundary_nodes = []
-start = time.time()
-for i in range(len(indices)):
-    boundary_nodes.append(util.is_boundary_node(indices[i], num_of_cols, num_of_rows))
-end = time.time()
-print end - start
-print indices[boundary_nodes]
+minimum_indices = np.where(downslope_neighbors == -1)[0]
+
+#minimums_in_each_watershed = sorted(trap_analysis.combine_all_minimums_numpy(minimum_indices, landscape.num_of_nodes_x,
+#                                    landscape.num_of_nodes_y)) # 43 seconds
+
+#cPickle.dump(minimums_in_each_watershed, open('minimumsInEachWatershed.p', 'wb'))
+
+minimums_in_each_watershed = cPickle.load(open('minimumsInEachWatershed.p', 'rb'))
 
 start = time.time()
-
-boundary_indices = util.are_boundary_nodes(indices, num_of_cols, num_of_rows)
+nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
 end = time.time()
 print end - start
-print boundary_indices
