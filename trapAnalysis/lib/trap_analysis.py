@@ -1,12 +1,13 @@
 import sys
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/experiments')
+sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
 import numpy as np
 import util
 import networkx
 import cPickle
 from networkx.algorithms.components.connected import connected_components
 import matplotlib.pyplot as plt
+saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles'
 
 class Landscape:
 
@@ -281,10 +282,10 @@ def get_watersheds_using_saved_files():
     :return nodes_in_watersheds: A list of sets, where each set is a watershed with all its nodes
     """
 
-    downslope_neighbors = np.load('downslopeNeighbors.npy')
-    endpoints = np.load('endpoints.npy')
+    downslope_neighbors = np.load(saved_file_dir + 'downslopeNeighbors.npy')
+    endpoints = np.load(saved_file_dir + 'endpoints.npy')
     minimum_indices = np.where(downslope_neighbors == -1)[0]
-    minimums_in_each_watershed = cPickle.load(open('minimumsInEachWatershed.p', 'rb'))
+    minimums_in_each_watershed = cPickle.load(open(saved_file_dir + 'minimumsInEachWatershed.p', 'rb'))
 
     nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
 
