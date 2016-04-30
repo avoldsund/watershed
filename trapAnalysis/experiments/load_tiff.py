@@ -32,9 +32,9 @@ landscape = load_geotiff.get_landscape(file_name)
 downslope_neighbors = np.load(saved_files + 'downslopeNeighbors.npy')
 
 #endpoints = trap_analysis.get_node_endpoints(landscape.num_of_nodes_x, landscape.num_of_nodes_y, downslope_neighbors)
-#endpoints = TemporaryFile()
-#np.save('endpoints', endpoints)
-endpoints = np.load(saved_files + 'endpoints.npy')
+#endPoints = TemporaryFile()
+#np.save('endPoints', endpoints)
+endpoints = np.load(saved_files + 'endPoints.npy')
 
 minimum_indices = np.where(downslope_neighbors == -1)[0]
 
@@ -45,7 +45,31 @@ minimum_indices = np.where(downslope_neighbors == -1)[0]
 
 minimums_in_each_watershed = cPickle.load(open(saved_files + 'minimumsInEachWatershed.pkl', 'rb'))
 
+indices_leading_to_endpoints = cPickle.load(open(saved_files + 'indicesLeadingToEndpoints.pkl', 'rb'))
+# Test to improve speed
+#print 'Start of method: '
+#start = time.time()
+#indices_leading_to_endpoints = trap_analysis.get_indices_leading_to_endpoints(endpoints, landscape.total_number_of_nodes)
+#end = time.time()
+#print end-start
+
+#cPickle.dump(indices_leading_to_endpoints, open('indicesLeadingToEndpoints.pkl', 'wb'))
+print 'Done loading files'
+print 'Start of getting nodes in watersheds: '
 start = time.time()
-nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
+
+nodes_in_watersheds = []
+minimum_indices = indices_leading_to_endpoints[0]
+for i in range(len(minimums_in_each_watershed)):
+    ws = []
+    for minimum in minimums_in_each_watershed[i]:
+        row_index = np.where(minimum_indices == minimum)[0]
+        nodes_to_minimum = indices_leading_to_endpoints[1][row_index].tolist()
+        ws.extend(nodes_to_minimum)
+    nodes_in_watersheds.append(sorted(ws))
+
 end = time.time()
-print end - start
+print end-start
+
+#cPickle.dump(indices_leading_to_endpoints, open('indicesLeadingToEndpoints.p', 'wb'))
+
