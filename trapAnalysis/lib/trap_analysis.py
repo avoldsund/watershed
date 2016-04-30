@@ -1,8 +1,10 @@
 import sys
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
+sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/experiments')
 import numpy as np
 import util
 import networkx
+import cPickle
 from networkx.algorithms.components.connected import connected_components
 import matplotlib.pyplot as plt
 
@@ -246,6 +248,7 @@ def get_nodes_in_watersheds(endpoints, combined_minimums):
         ws = []
         for minimum in combined_minimums[i]:
             row_index = np.where(minimum_indices == minimum)[0]
+            print indices_leading_to_endpoints[1][row_index]
             nodes_to_minimum = indices_leading_to_endpoints[1][row_index].tolist()
             ws.extend(nodes_to_minimum)
         nodes_in_watersheds.append(sorted(ws))
@@ -271,7 +274,18 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
 
     return nodes_in_watersheds
 
+
 def get_watersheds_using_saved_files():
+    """
+    Does the save as get_watersheds, but using pickled and save data so it doesn't have to redo everything
+    :return nodes_in_watersheds: A list of sets, where each set is a watershed with all its nodes
+    """
 
     downslope_neighbors = np.load('downslopeNeighbors.npy')
     endpoints = np.load('endpoints.npy')
+    minimum_indices = np.where(downslope_neighbors == -1)[0]
+    minimums_in_each_watershed = cPickle.load(open('minimumsInEachWatershed.p', 'rb'))
+
+    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
+
+    return nodes_in_watersheds
