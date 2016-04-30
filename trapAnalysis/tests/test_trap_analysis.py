@@ -58,6 +58,9 @@ def test_get_node_endpoints_four_mins_rectangular():
 
 def test_get_indices_leading_to_endpoints():
 
+    num_of_nodes_x = 6
+    num_of_nodes_y = 5
+    total_nodes = num_of_nodes_x * num_of_nodes_y
     endpoints = np.array([7, 7, 7, 5, 5, 5, 7, 7, 7, 22, 5, 5, 13, 13, 13, 22,
                           22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
     # unique_endpoints = np.array([5, 7, 13, 22, 23, 28, 29])
@@ -69,21 +72,23 @@ def test_get_indices_leading_to_endpoints():
                       np.array([27, 28]),
                       np.array([29])]
 
-    unique, indices = trap_analysis.get_indices_leading_to_endpoints(endpoints)
+    unique, indices = trap_analysis.get_indices_leading_to_endpoints(endpoints, total_nodes)
+
+    for i in range(len(indices)):
+        indices[i] = np.sort(indices[i])
+
     are_equal = True
 
-    if len(result_indices) == len(indices):
+    if len(indices) != len(result_indices):
+        are_equal = False
+    else:
         for i in range(len(indices)):
-            list_element_is_equal = np.array_equal(indices[i], result_indices[i]) == True
-            if list_element_is_equal:
-                continue
-            else:
+            elements_not_equal = np.array_equal(indices[i], result_indices[i]) == False
+            if elements_not_equal:
                 are_equal = False
                 break
-    else:
-        are_equal = False
 
-    assert are_equal is True
+    assert are_equal
 
 
 def test_get_watersheds():
@@ -137,6 +142,7 @@ def test_get_nodes_in_watersheds():
 
     num_of_cols = 6
     num_of_rows = 5
+    total_nodes = num_of_cols * num_of_rows
     indices = np.array([5, 7, 13, 22, 23, 28, 29])
     neighbors = np.array([[4, 10, 11, -1, -1, -1, -1, -1],
                          [0, 1, 2, 6, 8, 12, 13, 14],
@@ -151,7 +157,7 @@ def test_get_nodes_in_watersheds():
     watersheds = [[3, 4, 5, 10, 11], [0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26],
                   [9, 15, 16, 17, 21, 22, 23, 27, 28, 29]]
 
-    result_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, combined_minimums)
+    result_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, combined_minimums, total_nodes)
 
     assert sorted(watersheds) == sorted(result_watersheds)
 
