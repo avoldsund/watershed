@@ -125,7 +125,7 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
     return len(values), terminal_nodes
 
 
-def get_indices_leading_to_endpoints(endpoints):
+def get_indices_leading_to_endpoints(endpoints, total_num_of_nodes):
     """
     Returns a list of the indices of all nodes ending up in each endpoint, as well as which endpoint it is
     :param endpoints: All nodes which are endpoints for other nodes
@@ -133,13 +133,25 @@ def get_indices_leading_to_endpoints(endpoints):
     :return indices_to_endpoints: List of arrays where each array is the indices of all nodes going to that node
     """
 
-    unique, counts = np.unique(endpoints, return_counts=True)
-    indices_to_endpoints = []
+    # THIS METHOD SUCKS. IT IS EXCRUCIATINGLY SLOW AND MUST BE CHANGED!!!!!!!!!!!!!!!!!!!! ITS NOT EVEN CORRECT...
+    #unique, counts = np.unique(endpoints, return_counts=True)
+    #indices_to_endpoints = [[unique[i]] for i in range(len(unique))]
 
-    for i in range(len(unique)):
-        nr_of_indices_to_endpoint = counts[i]
-        indices_to_endpoint = np.where(endpoints == unique[i])[0]
-        indices_to_endpoints.append(indices_to_endpoint)
+    #for i in range(len(endpoints)):
+    #    minimum = endpoints[i]
+    #    min_index = unique.index(minimum)
+    #    indices_to_endpoints[min_index].extend(i)
+
+    # IF YOU THOUGHT THE ABOVE WAS SLOW, TRY THE METHOD BELOW....:(
+    #for i in range(len(unique)):
+    #    nr_of_indices_to_endpoint = counts[i]
+    #    indices_to_endpoint = np.where(endpoints == unique[i])[0]
+    #    indices_to_endpoints.append(indices_to_endpoint)
+
+    unique, counts = np.unique(endpoints, return_counts=True)
+    indices = np.arange(0, total_num_of_nodes, 1)
+    sorted_indices = np.argsort(endpoints)
+    indices_to_endpoints = np.split(sorted_indices, np.cumsum(counts))[0:-1]
 
     return unique, indices_to_endpoints
 
@@ -233,7 +245,7 @@ def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
     return minimums_in_watershed
 
 
-def get_nodes_in_watersheds(endpoints, combined_minimums):
+def get_nodes_in_watersheds(endpoints, combined_minimums, total_nodes):
     """
     Returns all watersheds and the nodes within them
     :param endpoints: If you follow the downslope until you hit a minimum, that's the node's endpoint
@@ -242,14 +254,15 @@ def get_nodes_in_watersheds(endpoints, combined_minimums):
     """
 
     nodes_in_watersheds = []
-    indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
-    minimum_indices = indices_leading_to_endpoints[0]
+    #indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints, total_nodes)
 
+    indices_leading_to_endpoints = cPickle.load(open(saved_file_dir + 'indicesLeadingToEndpoints.pkl', 'rb'))
+
+    minimum_indices = indices_leading_to_endpoints[0]
     for i in range(len(combined_minimums)):
         ws = []
         for minimum in combined_minimums[i]:
             row_index = np.where(minimum_indices == minimum)[0]
-            print indices_leading_to_endpoints[1][row_index]
             nodes_to_minimum = indices_leading_to_endpoints[1][row_index].tolist()
             ws.extend(nodes_to_minimum)
         nodes_in_watersheds.append(sorted(ws))
@@ -266,12 +279,13 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
     :return nodes_in_watersheds: List of lists where each list is a watershed and its nodes
     """
 
+    total_nodes = num_of_cols * num_of_rows
     downslope_neighbors = util.get_downslope_indices(num_of_cols, num_of_rows, heights)
     endpoints = get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors)
     minimum_indices = np.where(downslope_neighbors == -1)[0]
 
     minimums_in_each_watershed = sorted(combine_all_minimums_numpy(minimum_indices, num_of_cols, num_of_rows))
-    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
+    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed, total_nodes)
 
     return nodes_in_watersheds
 
