@@ -226,7 +226,6 @@ def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
     minimums_in_watershed = networkx.connected_components(graph)
     #networkx.draw(graph)
     #plt.show()
-    print minimums_in_watershed
 
     return minimums_in_watershed
 
@@ -271,3 +270,8 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
     nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
 
     return nodes_in_watersheds
+
+def get_watersheds_using_saved_files():
+
+    downslope_neighbors = np.load('downslopeNeighbors.npy')
+    endpoints = np.load('endpoints.npy')
