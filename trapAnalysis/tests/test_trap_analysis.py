@@ -60,7 +60,6 @@ def test_get_indices_leading_to_endpoints():
 
     num_of_nodes_x = 6
     num_of_nodes_y = 5
-    total_nodes = num_of_nodes_x * num_of_nodes_y
     endpoints = np.array([7, 7, 7, 5, 5, 5, 7, 7, 7, 22, 5, 5, 13, 13, 13, 22,
                           22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
     # unique_endpoints = np.array([5, 7, 13, 22, 23, 28, 29])
@@ -72,7 +71,7 @@ def test_get_indices_leading_to_endpoints():
                       np.array([27, 28]),
                       np.array([29])]
 
-    unique, indices = trap_analysis.get_indices_leading_to_endpoints(endpoints, total_nodes)
+    unique, indices = trap_analysis.get_indices_leading_to_endpoints(endpoints)
 
     for i in range(len(indices)):
         indices[i] = np.sort(indices[i])
@@ -99,12 +98,11 @@ def test_get_watersheds():
                  28: {21, 22, 23, 27, 29}, 29: {22, 23, 28}}
     result_watersheds = {0: {5}, 1: {7, 13}, 2: {22, 23, 28, 29}}
     watersheds = trap_analysis.combine_all_minimums(minimum_indices, neighbors)
-    # diff = set(watersheds.keys()) - set(result_watersheds.keys())
 
     assert watersheds == result_watersheds
 
 
-def test_get_nodes_to_watersheds_set():
+def test_get_nodes_in_watersheds_set():
 
     watersheds = {0: {5}, 1: {7, 13}, 2: {22, 23, 28, 29}}
     indices_to_endpoints = {5: {3, 4, 5, 10, 11}, 7: {0, 1, 2, 6, 7, 8},
@@ -119,7 +117,8 @@ def test_get_nodes_to_watersheds_set():
 
     assert nodes_in_watershed == result_nodes_in_watershed
 
-def test_get_watersheds_array():
+
+def test_combine_all_minimums_numpy():
 
     num_of_cols = 6
     num_of_rows = 5
@@ -154,12 +153,31 @@ def test_get_nodes_in_watersheds():
     endpoints = np.array([7, 7, 7, 5, 5, 5, 7, 7, 7, 22, 5, 5, 13, 13, 13, 22,
                           22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
     combined_minimums = [{5}, {7, 13}, {22, 23, 28, 29}]
-    watersheds = [[3, 4, 5, 10, 11], [0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26],
-                  [9, 15, 16, 17, 21, 22, 23, 27, 28, 29]]
+    watersheds = [np.array([3, 4, 5, 10, 11]),
+                  np.array([0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                  np.array([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])]
 
-    result_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, combined_minimums, total_nodes)
+    result_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, combined_minimums)
 
-    assert sorted(watersheds) == sorted(result_watersheds)
+
+    for i in range(len(result_watersheds)):
+        result_watersheds[i] = np.sort(result_watersheds[i])
+
+    are_equal = True
+
+    print watersheds
+    print result_watersheds
+
+    if len(watersheds) != len(result_watersheds):
+        are_equal = False
+    else:
+        for i in range(len(result_watersheds)):
+            elements_not_equal = np.array_equal(watersheds[i], result_watersheds[i]) == False
+            if elements_not_equal:
+                are_equal = False
+                break
+
+    assert are_equal
 
 
 def test_get_watersheds():
@@ -169,7 +187,22 @@ def test_get_watersheds():
     heights = np.array([5, 7, 8, 7, 6, 0, 7, 2, 10, 10, 7, 6, 7, 2, 4, 5, 5, 4, 7, 7, 3.9, 4, 0, 0, 6, 5, 4, 4, 0, 0])
     nodes_in_watersheds = trap_analysis.get_watersheds(heights, num_of_cols, num_of_rows)
 
-    result_nodes_in_watersheds = [[3, 4, 5, 10, 11], [0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26],
-                                  [9, 15, 16, 17, 21, 22, 23, 27, 28, 29]]
+    watersheds = [np.array([3, 4, 5, 10, 11]),
+                  np.array([0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                  np.array([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])]
 
-    assert sorted(nodes_in_watersheds) == sorted(result_nodes_in_watersheds)
+    for i in range(len(nodes_in_watersheds)):
+        nodes_in_watersheds[i] = np.sort(nodes_in_watersheds[i])
+
+    are_equal = True
+
+    if len(watersheds) != len(nodes_in_watersheds):
+        are_equal = False
+    else:
+        for i in range(len(nodes_in_watersheds)):
+            elements_not_equal = np.array_equal(watersheds[i], nodes_in_watersheds[i]) == False
+            if elements_not_equal:
+                are_equal = False
+                break
+
+    assert are_equal
