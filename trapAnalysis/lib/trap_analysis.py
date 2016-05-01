@@ -5,9 +5,9 @@ import numpy as np
 import util
 import networkx
 import cPickle
-from networkx.algorithms.components.connected import connected_components
-import matplotlib.pyplot as plt
-saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles'
+saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
+import time
+
 
 class Landscape:
 
@@ -22,7 +22,6 @@ class Landscape:
         self.total_number_of_nodes = nx * ny
         self.coordinates = np.empty((self.total_number_of_nodes, 3))
         self.arr = None
-
 
         step_size_x = geo_transform[1]
         step_size_y = geo_transform[5]
@@ -125,7 +124,7 @@ def update_terminal_nodes(terminal_nodes, downslope_neighbors, indices_in_termin
     return len(values), terminal_nodes
 
 
-def get_indices_leading_to_endpoints(endpoints, total_num_of_nodes):
+def get_indices_leading_to_endpoints(endpoints):
     """
     Returns a list of the indices of all nodes ending up in each endpoint, as well as which endpoint it is
     :param endpoints: All nodes which are endpoints for other nodes
@@ -148,8 +147,8 @@ def get_indices_leading_to_endpoints(endpoints, total_num_of_nodes):
     #    indices_to_endpoint = np.where(endpoints == unique[i])[0]
     #    indices_to_endpoints.append(indices_to_endpoint)
 
+    # This however, this is the real deal
     unique, counts = np.unique(endpoints, return_counts=True)
-    indices = np.arange(0, total_num_of_nodes, 1)
     sorted_indices = np.argsort(endpoints)
     indices_to_endpoints = np.split(sorted_indices, np.cumsum(counts))[0:-1]
 
@@ -245,7 +244,7 @@ def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
     return minimums_in_watershed
 
 
-def get_nodes_in_watersheds(endpoints, combined_minimums, total_nodes):
+def get_nodes_in_watersheds(endpoints, combined_minimums):
     """
     Returns all watersheds and the nodes within them
     :param endpoints: If you follow the downslope until you hit a minimum, that's the node's endpoint
@@ -253,21 +252,40 @@ def get_nodes_in_watersheds(endpoints, combined_minimums, total_nodes):
     :return nodes_in_watersheds: All watersheds and their corresponding nodes
     """
 
+    nodes_in_watersheds = [None for i in range(len(combined_minimums))]
+    combined_minimums = [np.array(list(comb)) for comb in combined_minimums]
+    minimums, indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
+    nr_of_minimums_in_watersheds = [len(element) for element in combined_minimums]
+    if nr_of_minimums_in_watersheds
+
+        #if lst[0] in patterns: lst[0] = ''
+        # http://stackoverflow.com/questions/10291997/how-can-i-do-assignments-in-a-list-comprehension
+    [nodes_in_watersheds[i] = indices_leading_to_endpoints[2] for i in range(len(combined_minimums)) if nr_of_minimums_in_watersheds[i] == 1]
+
+
+    min_index = np.where(minimums == combined_minimums[i])[0]
+    nodes_in_watersheds.append(indices_leading_to_endpoints[min_index])
+
+    # THIS IS TOO SLOW, MUST DO EVERYONE SIMULTANEOUSLY
+    """
     nodes_in_watersheds = []
-    #indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints, total_nodes)
+    minimums, indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
+    combined_minimums = [np.array(list(comb)) for comb in combined_minimums]    print len(combined_minimums)
+    print 'Heeeeeeeeeeeeeeeere'
+    start = time.time()
+    for i in range(100):
+        if len(combined_minimums[i]) == 1:
+            min_index = np.where(minimums == combined_minimums[i])[0]
+            nodes_in_watersheds.append(indices_leading_to_endpoints[min_index])
+        else:
+            indices_in_unique = np.where(np.in1d(minimums, combined_minimums[i]) == True)[0]
+            ws = np.concatenate(list((indices_leading_to_endpoints[i] for i in indices_in_unique)))
+            nodes_in_watersheds.append(ws)
+    end = time.time()
+    print 'Found all nodes in the watersheds in : ', end-start, ' seconds.'
+    """
 
-    indices_leading_to_endpoints = cPickle.load(open(saved_file_dir + 'indicesLeadingToEndpoints.pkl', 'rb'))
-
-    minimum_indices = indices_leading_to_endpoints[0]
-    for i in range(len(combined_minimums)):
-        ws = []
-        for minimum in combined_minimums[i]:
-            row_index = np.where(minimum_indices == minimum)[0]
-            nodes_to_minimum = indices_leading_to_endpoints[1][row_index].tolist()
-            ws.extend(nodes_to_minimum)
-        nodes_in_watersheds.append(sorted(ws))
-
-    return sorted(nodes_in_watersheds)
+    return nodes_in_watersheds
 
 
 def get_watersheds(heights, num_of_cols, num_of_rows):
@@ -279,13 +297,12 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
     :return nodes_in_watersheds: List of lists where each list is a watershed and its nodes
     """
 
-    total_nodes = num_of_cols * num_of_rows
     downslope_neighbors = util.get_downslope_indices(num_of_cols, num_of_rows, heights)
     endpoints = get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors)
     minimum_indices = np.where(downslope_neighbors == -1)[0]
 
     minimums_in_each_watershed = sorted(combine_all_minimums_numpy(minimum_indices, num_of_cols, num_of_rows))
-    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed, total_nodes)
+    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
 
     return nodes_in_watersheds
 
@@ -296,9 +313,7 @@ def get_watersheds_using_saved_files():
     :return nodes_in_watersheds: A list of sets, where each set is a watershed with all its nodes
     """
 
-    downslope_neighbors = np.load(saved_file_dir + 'downslopeNeighbors.npy')
     endpoints = np.load(saved_file_dir + 'endpoints.npy')
-    minimum_indices = np.where(downslope_neighbors == -1)[0]
     minimums_in_each_watershed = cPickle.load(open(saved_file_dir + 'minimumsInEachWatershed.p', 'rb'))
 
     nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
