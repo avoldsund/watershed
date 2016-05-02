@@ -45,9 +45,15 @@ cPickle.dump(minimums_in_each_watershed, open('minimumsInEachWatershed.pkl', 'wb
 indices_leading_to_endpoints = trap_analysis.get_indices_leading_to_endpoints(endpoints)
 cPickle.dump(indices_leading_to_endpoints, open('indicesLeadingToEndpoints.pkl', 'wb'))
 
-minimums_in_watershed = sorted(trap_analysis.combine_all_minimums_numpy(minimum_indices, landscape.num_of_nodes_x,
-                                                                        landscape.num_of_nodes_y))
-cPickle.dump(minimums_in_watershed, open('minimumsInWatershed.pkl', 'wb'))
+# Get the minimums in each watershed. Save to file.
+minimums_in_watersheds = sorted(trap_analysis.get_minimums_in_watersheds(minimum_indices, landscape.num_of_nodes_x,
+                                                                         landscape.num_of_nodes_y))
+cPickle.dump(minimums_in_watersheds, open('minimumsInWatershed.pkl', 'wb'))
+
+# Get the nodes in the watersheds. Save to file.
+nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_watersheds)
+cPickle.dump(nodes_in_watersheds, open('nodesInWatersheds.pkl', 'wb'))
+
 
 # How to load:
 # downslope_neighbors = np.load(saved_files + 'downslopeNeighbors.npy')
