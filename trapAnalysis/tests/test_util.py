@@ -63,6 +63,17 @@ def test_get_row_and_col_from_index_skinny():
     assert cmp(result_rows_and_cols, rows_and_cols) == 0
 
 
+def test_get_row_and_col_from_indices():
+
+    number_of_cols = 6
+    indices = np.array([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])
+    result_row_col = np.array([[1, 3], [2, 3], [2, 4], [2, 5], [3, 3], [3, 4], [3, 5], [4, 3], [4, 4], [4, 5]])
+
+    row_col = util.get_row_and_col_from_indices(indices, number_of_cols)
+
+    assert np.array_equal(row_col, result_row_col)
+
+
 def test_get_index_from_row_and_col():
 
     number_of_cols = 2
