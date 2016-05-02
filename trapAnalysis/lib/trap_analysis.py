@@ -245,47 +245,21 @@ def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
 
 
 def get_nodes_in_watersheds(endpoints, combined_minimums):
-    """
-    Returns all watersheds and the nodes within them
-    :param endpoints: If you follow the downslope until you hit a minimum, that's the node's endpoint
-    :param combined_minimums: A list of sets, where each set is a cluster of minimums
-    :return nodes_in_watersheds: All watersheds and their corresponding nodes
-    """
 
-    nodes_in_watersheds = [None for i in range(len(combined_minimums))]
     combined_minimums = [np.array(list(comb)) for comb in combined_minimums]
     minimums, indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
-    nr_of_minimums_in_watersheds = [len(element) for element in combined_minimums]
-    if nr_of_minimums_in_watersheds
+    dictionary_endpoints = dict(zip(minimums, indices_leading_to_endpoints))
 
-        #if lst[0] in patterns: lst[0] = ''
-        # http://stackoverflow.com/questions/10291997/how-can-i-do-assignments-in-a-list-comprehension
-    [nodes_in_watersheds[i] = indices_leading_to_endpoints[2] for i in range(len(combined_minimums)) if nr_of_minimums_in_watersheds[i] == 1]
+    watersheds = []
 
-
-    min_index = np.where(minimums == combined_minimums[i])[0]
-    nodes_in_watersheds.append(indices_leading_to_endpoints[min_index])
-
-    # THIS IS TOO SLOW, MUST DO EVERYONE SIMULTANEOUSLY
-    """
-    nodes_in_watersheds = []
-    minimums, indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
-    combined_minimums = [np.array(list(comb)) for comb in combined_minimums]    print len(combined_minimums)
-    print 'Heeeeeeeeeeeeeeeere'
-    start = time.time()
-    for i in range(100):
+    for i in range(len(combined_minimums)):
         if len(combined_minimums[i]) == 1:
-            min_index = np.where(minimums == combined_minimums[i])[0]
-            nodes_in_watersheds.append(indices_leading_to_endpoints[min_index])
+            watersheds.append(dictionary_endpoints[list(combined_minimums[i])[0]])
         else:
-            indices_in_unique = np.where(np.in1d(minimums, combined_minimums[i]) == True)[0]
-            ws = np.concatenate(list((indices_leading_to_endpoints[i] for i in indices_in_unique)))
-            nodes_in_watersheds.append(ws)
-    end = time.time()
-    print 'Found all nodes in the watersheds in : ', end-start, ' seconds.'
-    """
+            ws = np.concatenate(list((dictionary_endpoints[i] for i in combined_minimums[i])))
+            watersheds.append(ws)
 
-    return nodes_in_watersheds
+    return watersheds
 
 
 def get_watersheds(heights, num_of_cols, num_of_rows):
