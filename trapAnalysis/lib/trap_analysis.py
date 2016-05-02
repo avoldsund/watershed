@@ -140,7 +140,7 @@ def get_indices_leading_to_endpoints(endpoints):
     return indices_to_endpoints_dict
 
 
-def combine_all_minimums(minimum_indices, min_neighbors):
+def combine_all_minimums_set(minimum_indices, min_neighbors):
     # This method is not used
     """
     The method will combine all the minimums in a landscape into larger local minimums. It will return a dictionary
