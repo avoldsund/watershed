@@ -206,3 +206,33 @@ def test_get_watersheds():
                 break
 
     assert are_equal
+
+
+def test_get_nodes_in_watersheds():
+
+    endpoints = np.array([7, 7, 7, 5, 5, 5, 7, 7, 7, 22, 5, 5, 13, 13, 13, 22, 22,
+                          23, 13, 19, 19, 22, 22, 23, 25, 25, 25, 28, 28, 29])
+    combined_minimums = [{5}, {7, 13, 19, 25}, {22, 23, 28, 29}]
+    unique = np.array([5, 7, 13, 19, 22, 23, 25, 28, 29])
+    counts = np.array([5, 6, 3, 2, 3, 5, 2, 2, 1])
+    result_watersheds = [np.array([3, 4, 5, 10, 11]),
+                         np.array([0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                         np.array([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])]
+
+    watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, combined_minimums)
+
+    for i in range(len(watersheds)):
+        watersheds[i] = np.sort(watersheds[i])
+
+    are_equal = True
+
+    if len(watersheds) != len(result_watersheds):
+        are_equal = False
+    else:
+        for i in range(len(watersheds)):
+            elements_not_equal = np.array_equal(watersheds[i], result_watersheds[i]) == False
+            if elements_not_equal:
+                are_equal = False
+                break
+
+    assert are_equal
