@@ -2,7 +2,6 @@ import numpy as np
 import math
 
 
-
 def get_row_and_col_from_index(node_index, number_of_cols):
     """
     Given an index in the 1d-grid, the row number and column coordinates in the 2d-grid is returned
@@ -14,6 +13,15 @@ def get_row_and_col_from_index(node_index, number_of_cols):
     r = node_index/number_of_cols
     c = node_index % number_of_cols
     row_col = (r, c)
+
+    return row_col
+
+
+def get_row_and_col_from_indices(node_indices, number_of_cols):
+
+    row_col = np.empty((len(node_indices), 2), dtype=int)
+    row_col[:, 0] = np.divide(node_indices, number_of_cols)
+    row_col[:, 1] = node_indices % number_of_cols
 
     return row_col
 
