@@ -97,7 +97,7 @@ def test_get_watersheds():
                  22: {15, 16, 17, 21, 23, 27, 28, 29}, 23: {16, 17, 22, 28, 29},
                  28: {21, 22, 23, 27, 29}, 29: {22, 23, 28}}
     result_watersheds = {0: {5}, 1: {7, 13}, 2: {22, 23, 28, 29}}
-    watersheds = trap_analysis.combine_all_minimums(minimum_indices, neighbors)
+    watersheds = trap_analysis.combine_all_minimums_set(minimum_indices, neighbors)
 
     assert watersheds == result_watersheds
 
