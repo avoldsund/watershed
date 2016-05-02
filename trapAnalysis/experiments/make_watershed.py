@@ -37,7 +37,7 @@ np.save('endPoints', endpoints)
 
 # Get minimums in each watershed. Save to file.
 minimum_indices = np.where(downslope_neighbors == -1)[0]
-minimums_in_each_watershed = sorted(trap_analysis.combine_all_minimums_numpy(minimum_indices, landscape.num_of_nodes_x,
+minimums_in_each_watershed = sorted(trap_analysis.get_minimums_in_watersheds(minimum_indices, landscape.num_of_nodes_x,
                                     landscape.num_of_nodes_y))
 cPickle.dump(minimums_in_each_watershed, open('minimumsInEachWatershed.pkl', 'wb'))
 
