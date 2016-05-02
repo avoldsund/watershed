@@ -30,9 +30,8 @@ minimum_indices = np.where(downslope_neighbors == -1)[0]
 
 minimums_in_each_watershed = cPickle.load(open(saved_files + 'minimumsInEachWatershed.pkl', 'rb'))
 indices_leading_to_endpoints = cPickle.load(open(saved_files + 'indicesLeadingToEndpoints.pkl', 'rb'))
-minimums_in_watershed = cPickle.load(open(saved_files + 'minimumsInWatershed.pkl', 'rb'))
+minimums_in_watersheds = cPickle.load(open(saved_files + 'minimumsInWatersheds.pkl', 'rb'))
 
 print 'Done loading files. '
-nodes_in_watershed = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_watershed)
-
-
+nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_watersheds)
+cPickle.dump(nodes_in_watersheds, open('nodesInWatersheds.pkl', 'wb'))
