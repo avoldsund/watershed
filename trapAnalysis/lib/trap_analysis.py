@@ -132,32 +132,16 @@ def get_indices_leading_to_endpoints(endpoints):
     :return indices_to_endpoints: List of arrays where each array is the indices of all nodes going to that node
     """
 
-    # THIS METHOD SUCKS. IT IS EXCRUCIATINGLY SLOW AND MUST BE CHANGED!!!!!!!!!!!!!!!!!!!! ITS NOT EVEN CORRECT...
-    #unique, counts = np.unique(endpoints, return_counts=True)
-    #indices_to_endpoints = [[unique[i]] for i in range(len(unique))]
-
-    #for i in range(len(endpoints)):
-    #    minimum = endpoints[i]
-    #    min_index = unique.index(minimum)
-    #    indices_to_endpoints[min_index].extend(i)
-
-    # IF YOU THOUGHT THE ABOVE WAS SLOW, TRY THE METHOD BELOW....:(
-    #for i in range(len(unique)):
-    #    nr_of_indices_to_endpoint = counts[i]
-    #    indices_to_endpoint = np.where(endpoints == unique[i])[0]
-    #    indices_to_endpoints.append(indices_to_endpoint)
-
-    # This however, this is the real deal
     unique, counts = np.unique(endpoints, return_counts=True)
     sorted_indices = np.argsort(endpoints)
     indices_to_endpoints = np.split(sorted_indices, np.cumsum(counts))[0:-1]
+    indices_to_endpoints_dict = dict(zip(unique, indices_to_endpoints))
 
-    return unique, indices_to_endpoints
+    return indices_to_endpoints_dict
 
 
 def combine_all_minimums(minimum_indices, min_neighbors):
-    # THIS IS A TEST USING SETS, NOT SURE IF THIS IS FINAL SOLUTION. IF IT IS, MUCH MUST BE REWRITTEN!
-    # THIS FUNCTION IS OBSOLETE NOW, USING NUMPY INSTEAD
+    # This method is not used
     """
     The method will combine all the minimums in a landscape into larger local minimums. It will return a dictionary
     with the key being the region number, and the value being all indices in the region. The method will be used as
@@ -189,6 +173,7 @@ def combine_all_minimums(minimum_indices, min_neighbors):
 
 
 def get_nodes_in_watersheds_set(watersheds, indices_to_endpoints):
+    # This method is not used
     """
     The function returns a dictionary with key being the watershed number, and value being a set of all indices that
     terminate in the watershed. The length of nodes_in_watershed will be the number of watersheds in the landscape.
@@ -211,23 +196,23 @@ def get_nodes_in_watersheds_set(watersheds, indices_to_endpoints):
     return nodes_in_watershed
 
 
-def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
+def get_minimums_in_watersheds(minimum_indices, num_of_cols, num_of_rows):
     """
-    Returns a list of sets where each set is a cluster of minimums
-    :param indices_minimums: The indices of the minimums in the landscape
-    :param num_of_cols: Number of columns in the 2d-grid
-    :param num_of_rows: Number of rows in the 2d-grid
-    :return minimums_in_watershed: A combination of all minimums into larger minimums
+    Returns a list of sets where each set is a collection of all minimums in each watershed.
+    :param minimum_indices: The indices of the minimums in the landscape.
+    :param num_of_cols: Number of columns in the 2d-grid.
+    :param num_of_rows: Number of rows in the 2d-grid.
+    :return minimums_in_watershed: All minimums in each watershed
     """
 
-    neighbors = util.get_neighbors_for_indices_array(indices_minimums, num_of_cols, num_of_rows)
-    neighbor_is_a_min_bool = np.in1d(neighbors, indices_minimums)
-    neighbor_is_a_min_bool = neighbor_is_a_min_bool.reshape(len(indices_minimums), 8)
+    neighbors = util.get_neighbors_for_indices_array(minimum_indices, num_of_cols, num_of_rows)
+    neighbor_is_a_min_bool = np.in1d(neighbors, minimum_indices)
+    neighbor_is_a_min_bool = neighbor_is_a_min_bool.reshape(len(minimum_indices), 8)
     min_neighbors = np.multiply(neighbors, neighbor_is_a_min_bool).tolist()
 
-    for i in range(len(indices_minimums)):
+    for i in range(len(minimum_indices)):
         min_neighbors[i] = [value for value in min_neighbors[i] if value != 0]
-        min_neighbors[i].append(indices_minimums[i])
+        min_neighbors[i].append(minimum_indices[i])
 
     min_neighbors = filter(None, min_neighbors)  # Remove the lists without neighbors being minimums
 
@@ -245,10 +230,16 @@ def combine_all_minimums_numpy(indices_minimums, num_of_cols, num_of_rows):
 
 
 def get_nodes_in_watersheds(endpoints, combined_minimums):
+    """
+    Returns a list where each element in the list is a watershed with its indices in an array.
+    :param endpoints: The endpoints for each node in the landscape.
+    :param combined_minimums: A list where each element is a set
+    containing the indices of the minimums in the watershed.
+    :return watersheds: All watersheds and their indices in each of them.
+    """
 
     combined_minimums = [np.array(list(comb)) for comb in combined_minimums]
-    minimums, indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
-    dictionary_endpoints = dict(zip(minimums, indices_leading_to_endpoints))
+    dictionary_endpoints = get_indices_leading_to_endpoints(endpoints)
 
     watersheds = []
 
@@ -268,15 +259,15 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
     :param heights: z-coordinate for all indices
     :param num_of_cols: Number of grid points in x-direction
     :param num_of_rows: Number of grid points in y-direction
-    :return nodes_in_watersheds: List of lists where each list is a watershed and its nodes
+    :return nodes_in_watersheds: List of arrays where each array is a watershed and its nodes
     """
 
     downslope_neighbors = util.get_downslope_indices(num_of_cols, num_of_rows, heights)
     endpoints = get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors)
     minimum_indices = np.where(downslope_neighbors == -1)[0]
 
-    minimums_in_each_watershed = sorted(combine_all_minimums_numpy(minimum_indices, num_of_cols, num_of_rows))
-    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
+    minimums_in_watersheds = sorted(get_minimums_in_watersheds(minimum_indices, num_of_cols, num_of_rows))
+    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_watersheds)
 
     return nodes_in_watersheds
 
