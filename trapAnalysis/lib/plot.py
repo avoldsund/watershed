@@ -1,5 +1,10 @@
-import matplotlib.pyplot as plt
+import sys
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
+import util
+
 
 
 def plot_landscape(landscape):
@@ -25,15 +30,32 @@ def plot_landscape(landscape):
     plt.show()
 
 
+def plot_watersheds(nodes_in_watersheds, number_of_cols):
+    """
+    Plot all or some watersheds in the landscape using different colors for different watersheds.
+    :param nodes_in_watersheds: List of arrays. Each array have all indices in the watershed.
+    :param number_of_cols: Number of grid points in the x-direction.
+    :return: Plot watersheds
+    """
+
+    # Only plot watersheds with more than 10000 nodes
+    large_watersheds = [watershed for watershed in nodes_in_watersheds
+                        if len(watershed) > 5000]
+    nr_of_large_watersheds = len(large_watersheds)
+
+    print nr_of_large_watersheds
+    colors = iter(cm.rainbow(np.linspace(0, 1, nr_of_large_watersheds)))
+
+    for i in range(nr_of_large_watersheds):
+        row_col = util.get_row_and_col_from_indices(large_watersheds[i], number_of_cols)
+        plt.plot(row_col[:, 1], row_col[:, 0], 'ro', color=next(colors))
+    plt.gca().invert_yaxis()
+    plt.show()
+
+
 def plot_local_minimums(local_minimums_coordinates):
     # Do each 16th point
 
     plt.plot(local_minimums_coordinates[0::16, 0], local_minimums_coordinates[0::16, 1], 'ro')
     plt.show()
 
-
-def plot_watersheds(node_coordinates):
-
-    plt.plot(node_coordinates[:, 0], node_coordinates[:, 1], 'ro')
-    #plt.gca().invert_yaxis()
-    plt.show()
