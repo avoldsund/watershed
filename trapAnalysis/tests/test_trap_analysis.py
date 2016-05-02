@@ -58,18 +58,16 @@ def test_get_node_endpoints_four_mins_rectangular():
 
 def test_get_indices_leading_to_endpoints():
 
-    num_of_nodes_x = 6
-    num_of_nodes_y = 5
     endpoints = np.array([7, 7, 7, 5, 5, 5, 7, 7, 7, 22, 5, 5, 13, 13, 13, 22,
                           22, 23, 13, 13, 13, 22, 22, 23, 13, 13, 13, 28, 28, 29])
     # unique_endpoints = np.array([5, 7, 13, 22, 23, 28, 29])
     result_indices_to_endpoints = {5: np.array([3, 4, 5, 10, 11]),
-                      7: np.array([0, 1, 2, 6, 7, 8]),
-                      13: np.array([12, 13, 14, 18, 19, 20, 24, 25, 26]),
-                      22: np.array([9, 15, 16, 21, 22]),
-                      23: np.array([17, 23]),
-                      28: np.array([27, 28]),
-                      29: np.array([29])}
+                                   7: np.array([0, 1, 2, 6, 7, 8]),
+                                   13: np.array([12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                                   22: np.array([9, 15, 16, 21, 22]),
+                                   23: np.array([17, 23]),
+                                   28: np.array([27, 28]),
+                                   29: np.array([29])}
 
     indices_to_endpoints = trap_analysis.get_indices_leading_to_endpoints(endpoints)
 
