@@ -4,10 +4,11 @@ import load_geotiff
 import plot
 
 """
-Plot the landscape using the landscape object holding (x, y, z)-data
+Plot the landscape using the landscape object holding (x, y, z)-data in 3 dimensions
 """
 
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
 landscape = load_geotiff.get_landscape(file_name)
+downsampling_factor = 8
 
-plot.plot_landscape(landscape)
+plot.plot_landscape_3d(landscape, downsampling_factor)
