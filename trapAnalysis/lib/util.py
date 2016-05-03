@@ -40,7 +40,7 @@ def get_index_from_row_and_col(row_number, col_number, number_of_cols):
     return node_index
 
 
-def get_node_index(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
+def get_node_index_from_coords(x_coord, y_coord, num_of_nodes_x, num_of_nodes_y):
     """
     Given a coordinate in the 2d-grid we return the index in the 1d-array
     :param x_coord: Coordinate in the x-direction
