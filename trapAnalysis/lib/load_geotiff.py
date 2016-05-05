@@ -101,3 +101,54 @@ def get_landscape(file_name):
     construct_landscape_grid(arr, landscape)
 
     return landscape
+
+
+def get_lake_river_information(landscape, lake_file, river_file, small_rivers_file):
+
+    ds_lakes = load_data_set(lake_file)
+    ds_rivers = load_data_set(river_file)
+    bool_small_rivers = load_data_set(small_rivers_file)
+    bool_lakes = get_array_from_band(ds_lakes)
+    bool_rivers = get_array_from_band(ds_rivers)
+    bool_small_rivers = get_array_from_band(bool_small_rivers)
+
+    """band = 1
+    band_lakes = ds_lakes.GetRasterBand(band)
+    band_rivers = ds_rivers.GetRasterBand(band)
+
+    no_data_value_lakes = band_lakes.GetNoDataValue()
+    no_data_value_rivers = band_rivers.GetNoDataValue()
+
+    lake_cntr = 0
+    if no_data_value_lakes:
+        bool_lakes[bool_lakes == no_data_value_lakes] = np.ma.masked
+        lake_cntr += 1
+
+    river_cntr = 0
+    if no_data_value_rivers:
+        bool_rivers[bool_rivers == no_data_value_rivers] = np.ma.masked
+        river_cntr += 1
+
+    if river_cntr != 0 or lake_cntr != 0:
+        print "Lakes or rivers have invalid values"
+        return
+    """
+    bool_lakes = bool_lakes[:-1, 1:]
+
+    # THIS IS HORRIBLE CODE THAT ONLY WORKS FOR THIS PROBLEM, NOT GENERAL!!!!!!!!
+    n_rows, n_cols = np.shape(bool_rivers)
+    cols = min(landscape.num_of_nodes_x, n_cols)
+    rows = min(landscape.num_of_nodes_y, n_rows)
+    empty_mat = np.zeros((landscape.num_of_nodes_x, landscape.num_of_nodes_y))
+    empty_mat[0:rows, 0:n_cols] = bool_rivers[0:rows, 0:n_cols]
+    bool_rivers = empty_mat
+
+    bool_small_rivers = bool_small_rivers[0:landscape.num_of_nodes_y, 0:landscape.num_of_nodes_x]
+    print np.shape(bool_small_rivers)
+    lake_or_river = bool_lakes.astype(bool) + bool_rivers.astype(bool) + bool_small_rivers.astype(bool)
+    print 'Total: ', np.sum(lake_or_river)
+    print 'Lake: ', np.sum(bool_lakes.astype(bool))
+    print 'River: ', np.sum(bool_rivers.astype(bool))
+    print 'Small rivers: ', np.sum(bool_small_rivers.astype(bool))
+
+    return lake_or_river
