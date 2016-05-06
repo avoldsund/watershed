@@ -21,6 +21,7 @@ heights_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/ander
 lakes_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_innsjo.tiff'
 rivers_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_elvbekk.tiff'
 small_rivers_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_elvmidtlinje.tiff'
+marshes_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_myr.tiff'
 
 """
  Save watershed using information about which points in the landscape that are lakes and rivers.
@@ -30,8 +31,9 @@ small_rivers_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/
 landscape = load_geotiff.get_landscape(heights_file)
 
 # Get information about lakes, rivers and marshes
-lakes_and_rivers = load_geotiff.get_lake_river_information(landscape, lakes_file, rivers_file, small_rivers_file)
-lakes_and_rivers = lakes_and_rivers.flatten()
+lake_river_marsh = load_geotiff.get_lake_river_marsh_information(
+    landscape, lakes_file, rivers_file, small_rivers_file, marshes_file)
+lakes_and_rivers = lake_river_marsh.flatten()
 
 # Get downslope neighbors and modify it with the previous information
 downslope_neighbors = util.get_downslope_indices(landscape.num_of_nodes_x, landscape.num_of_nodes_y,

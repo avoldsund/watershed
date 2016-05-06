@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 import cPickle
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
@@ -10,11 +11,12 @@ import util
 saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
 
-"""
- Plot all combined minimums in the landscape after doing the standard method.
-"""
-
 landscape = load_geotiff.get_landscape(file_name)
-combined_minimums = cPickle.load(open(saved_files + 'minimumsInWatersheds.pkl', 'rb'))
 
-plot.plot_combined_minimums(combined_minimums, landscape)
+"""
+ Plot the watersheds in 2d with the landscape below
+"""
+
+nodes_in_watersheds = cPickle.load(open(saved_files + 'nodesInWatersheds.pkl', 'rb'))
+
+plot.plot_watersheds_2d(nodes_in_watersheds, landscape, 4)

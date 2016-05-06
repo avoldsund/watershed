@@ -16,14 +16,14 @@ small_rivers_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/
 marshes_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_myr.tiff'
 
 """
- Plot all lakes, rivers and marshes
+ Plot all lakes, rivers and marshes from the data files.
 """
 
 landscape = load_geotiff.get_landscape(heights_file)
 
 
-lakes, rivers, small_rivers, marshes = load_geotiff.get_lake_river_marsh_information(landscape, lakes_file, rivers_file,
-                                                                     small_rivers_file, marshes_file)
+lakes, rivers, small_rivers, marshes = load_geotiff.get_lake_river_marsh_information(
+    landscape, lakes_file, rivers_file, small_rivers_file, marshes_file)
 
 lakes = lakes.flatten().astype(int)
 rivers = rivers.flatten().astype(int)

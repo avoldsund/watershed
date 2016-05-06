@@ -19,4 +19,4 @@ landscape = load_geotiff.get_landscape(heights_file)
 
 nodes_in_watersheds = cPickle.load(open(saved_files + 'nodesInWatershedsInclMarshes.pkl', 'rb'))
 
-plot.plot_watersheds_add_info(nodes_in_watersheds, landscape, 4)
+plot.plot_watersheds_2d_alternative(nodes_in_watersheds, landscape, 4)

@@ -9,6 +9,6 @@ Plot the landscape using the landscape object holding (x, y, z)-data in 2 dimens
 
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
 landscape = load_geotiff.get_landscape(file_name)
-downsampling_factor = 8
+downsampling_factor = 4
 
 plot.plot_landscape_2d(landscape, downsampling_factor)
