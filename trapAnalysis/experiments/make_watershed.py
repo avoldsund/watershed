@@ -13,13 +13,14 @@ sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
 import load_geotiff
 import util
 import trap_analysis
+import time
 
 saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
 
 
 """
- Save the watershed using pickle and numpy save
+ Save the watershed using pickle and numpy save.
 """
 
 landscape = load_geotiff.get_landscape(file_name)
@@ -53,11 +54,3 @@ cPickle.dump(minimums_in_watersheds, open('minimumsInWatersheds.pkl', 'wb'))
 # Get the nodes in the watersheds. Save to file.
 nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_watersheds)
 cPickle.dump(nodes_in_watersheds, open('nodesInWatersheds.pkl', 'wb'))
-
-
-# How to load:
-# downslope_neighbors = np.load(saved_files + 'downslopeNeighbors.npy')
-# endpoints = np.load(saved_files + 'endPoints.npy')
-# minimums_in_each_watershed = cPickle.load(open(saved_files + 'minimumsInEachWatershed.pkl', 'rb'))
-# indices_leading_to_endpoints = cPickle.load(open(saved_files + 'indicesLeadingToEndpoints.pkl', 'rb'))
-# minimums_in_watershed = cPickle.load(open(saved_files + 'minimumsInWatershed.pkl', 'rb'))
