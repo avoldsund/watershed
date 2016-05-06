@@ -2,11 +2,9 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import matplotlib.colors as colors
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
 import util
-import mpl_toolkits.mplot3d.axes3d as axes3d
-
+import matplotlib.patches as mpatches
 
 def plot_landscape_2d(landscape, ds):
     """
@@ -164,7 +162,6 @@ def plot_watersheds_add_info(nodes_in_watersheds, landscape, ds):
     y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
     x, y = np.meshgrid(x_grid[0::ds], y_grid[0::ds])
     z = landscape.arr[0::ds, 0::ds]
-    print y
 
     cmap = plt.get_cmap('terrain')
     v = np.linspace(min(landscape.coordinates[:, 2]), max(landscape.coordinates[:, 2]), 100, endpoint=True)
@@ -173,12 +170,12 @@ def plot_watersheds_add_info(nodes_in_watersheds, landscape, ds):
 
     # Only plot watersheds with more than n nodes
     large_watersheds = [watershed for watershed in nodes_in_watersheds
-                        if len(watershed) > 100]
-    small_sheds = [ws for ws in nodes_in_watersheds if len(ws) <= 100]
-    print 'Number of watersheds with less than 500 nodes: ', len(small_sheds)
+                        if len(watershed) > 10]
+    small_sheds = [ws for ws in nodes_in_watersheds if len(ws) <= 10]
+    #print 'Number of watersheds with less than 500 nodes: ', len(small_sheds)
     large_watersheds.sort(key=len)
     nr_of_large_watersheds = len(large_watersheds)
-    print 'Nr of ws over 100', nr_of_large_watersheds
+    #print 'Nr of ws over 100', nr_of_large_watersheds
 
     color_list = ['red', 'green', 'blue', 'yellow']
     color_list = iter(color_list * (nr_of_large_watersheds/3))
@@ -200,9 +197,44 @@ def plot_watersheds_add_info(nodes_in_watersheds, landscape, ds):
                     color=next(colors), s=25, lw=0, alpha=0.5)
 
     plt.rcParams.update({'font.size': 14})
-    plt.title('All watersheds with over 100 nodes, using information about lakes and rivers')
+    plt.title('All watersheds with over 10 nodes, using information about lakes, rivers and marshes')
     plt.xlabel('x')
     plt.ylabel('y')
 
     #plt.savefig('watersheds2dInformation.eps', format='eps', dpi=1000, bbox_inches='tight')
+    plt.show()
+
+
+def plot_lakes_rivers_marshes(landscape, lakes, rivers, small_rivers, marshes):
+    """
+    Plot all lakes, rivers and marshes in different colors
+    :param landscape: The landscape object
+    :param lakes: The indices for all lakes
+    :param rivers: The indices for all rivers
+    :param small_rivers: The indices for all small rivers
+    :param marshes: The indices for all marshes
+    :return:
+    """
+
+    areas = [lakes, rivers, small_rivers, marshes]
+    legends = ['Lakes', 'Large rivers', 'Small rivers', 'Marshes']
+    colors = ['darkblue', 'royalblue', 'lightskyblue', 'black']
+
+    for i in range(len(areas)):
+        row_col = util.get_row_and_col_from_indices(areas[i], landscape.num_of_nodes_x)
+        plt.scatter(landscape.x_min + row_col[0::, 1] * landscape.step_size,
+                    landscape.y_max - row_col[0::, 0] * landscape.step_size,
+                    color=colors[i], s=5, lw=0, alpha=1, label=legends[i])
+
+    # Making the legend
+    lakes_patch = mpatches.Patch(color='darkblue', label='Lakes')
+    rivers_patch = mpatches.Patch(color='royalblue', label='Large rivers')
+    small_rivers_patch = mpatches.Patch(color='lightskyblue', label='Small rivers')
+    marshes_patch = mpatches.Patch(color='black', label='Marshes')
+    plt.legend(handles=[lakes_patch, rivers_patch, small_rivers_patch, marshes_patch])
+
+    plt.rcParams.update({'font.size': 14})
+    plt.title('Lakes, rivers and marshes')
+    plt.xlabel('x')
+    plt.ylabel('y')
     plt.show()
