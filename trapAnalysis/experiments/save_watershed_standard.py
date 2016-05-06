@@ -25,32 +25,21 @@ file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_h
 
 landscape = load_geotiff.get_landscape(file_name)
 
-# Get downslope neighbors. Save to file.
+# Get downslope neighbors
 downslope_neighbors = util.get_downslope_indices(landscape.num_of_nodes_x, landscape.num_of_nodes_y,
                                                  landscape.coordinates[:, 2])
-downslopeNeighbors = TemporaryFile()
-np.save('downslopeNeighbors', downslope_neighbors)
 
-# Get endpoints. Save to file.
+# Get endpoints
 endpoints = trap_analysis.get_node_endpoints(landscape.num_of_nodes_x, landscape.num_of_nodes_y, downslope_neighbors)
-endPoints = TemporaryFile()
-np.save('endPoints', endpoints)
 
-# Get minimums in each watershed. Save to file.
+# Get minimums in each watershed
 minimum_indices = np.where(downslope_neighbors == -1)[0]
 minimums_in_each_watershed = sorted(trap_analysis.get_minimums_in_watersheds(minimum_indices, landscape.num_of_nodes_x,
                                     landscape.num_of_nodes_y))
-cPickle.dump(minimums_in_each_watershed, open('minimumsInEachWatershed.pkl', 'wb'))
 
-# Get indices leading to endpoints. Save to file.
+# Get indices leading to endpoints
 indices_leading_to_endpoints = trap_analysis.get_indices_leading_to_endpoints(endpoints)
-cPickle.dump(indices_leading_to_endpoints, open('indicesLeadingToEndpoints.pkl', 'wb'))
-
-# Get the minimums in each watershed. Save to file.
-minimums_in_watersheds = sorted(trap_analysis.get_minimums_in_watersheds(minimum_indices, landscape.num_of_nodes_x,
-                                                                         landscape.num_of_nodes_y))
-cPickle.dump(minimums_in_watersheds, open('minimumsInWatersheds.pkl', 'wb'))
 
 # Get the nodes in the watersheds. Save to file.
-nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_watersheds)
+nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
 cPickle.dump(nodes_in_watersheds, open('nodesInWatersheds.pkl', 'wb'))
