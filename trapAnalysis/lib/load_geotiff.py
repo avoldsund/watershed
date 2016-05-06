@@ -152,3 +152,40 @@ def get_lake_river_information(landscape, lake_file, river_file, small_rivers_fi
     print 'Small rivers: ', np.sum(bool_small_rivers.astype(bool))
 
     return lake_or_river
+
+
+def get_lake_river_marsh_information(landscape, lake_file, river_file, small_rivers_file, marsh_file):
+
+    ds_lakes = load_data_set(lake_file)
+    ds_rivers = load_data_set(river_file)
+    ds_small_rivers = load_data_set(small_rivers_file)
+    ds_marsh = load_data_set(marsh_file)
+
+    bool_lakes = get_array_from_band(ds_lakes)
+    bool_rivers = get_array_from_band(ds_rivers)
+    bool_small_rivers = get_array_from_band(ds_small_rivers)
+    bool_marsh = get_array_from_band(ds_marsh)
+
+    bool_lakes = bool_lakes[:-1, 1:]
+
+    bool_marsh = bool_marsh[:-2, 1:]
+
+    # THIS IS HORRIBLE CODE THAT ONLY WORKS FOR THIS PROBLEM, NOT GENERAL!!!!!!!!
+    n_rows, n_cols = np.shape(bool_rivers)
+    cols = min(landscape.num_of_nodes_x, n_cols)
+    rows = min(landscape.num_of_nodes_y, n_rows)
+    empty_mat = np.zeros((landscape.num_of_nodes_x, landscape.num_of_nodes_y))
+    empty_mat[0:rows, 0:n_cols] = bool_rivers[0:rows, 0:n_cols]
+    bool_rivers = empty_mat
+
+    bool_small_rivers = bool_small_rivers[0:landscape.num_of_nodes_y, 0:landscape.num_of_nodes_x]
+
+    lake_river_marsh = bool_lakes.astype(bool) + bool_rivers.astype(bool) + \
+                       bool_small_rivers.astype(bool) + bool_marsh.astype(bool)
+    print 'Total: ', np.sum(lake_river_marsh)
+    print 'Lake: ', np.sum(bool_lakes.astype(bool))
+    print 'River: ', np.sum(bool_rivers.astype(bool))
+    print 'Small rivers: ', np.sum(bool_small_rivers.astype(bool))
+    print 'Marshes: ', np.sum(bool_marsh.astype(bool))
+
+    return bool_lakes.astype(bool), bool_rivers.astype(bool), bool_small_rivers.astype(bool), bool_marsh.astype(bool)
