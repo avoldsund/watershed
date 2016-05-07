@@ -11,15 +11,16 @@ import time
 
 class Landscape:
 
-    def __init__(self, geo_transform, nx, ny):
+    def __init__(self, ds):
 
-        self.num_of_nodes_x = nx
-        self.num_of_nodes_y = ny
+        geo_transform = ds.GetGeoTransform()
+        self.num_of_nodes_x = ds.RasterXSize
+        self.num_of_nodes_y = ds.RasterYSize
         self.x_min = geo_transform[0]
         self.y_max = geo_transform[3]
         self.x_max = self.x_min + geo_transform[1] * (self.num_of_nodes_x - 1)
         self.y_min = self.y_max + geo_transform[5] * (self.num_of_nodes_y - 1)
-        self.total_number_of_nodes = nx * ny
+        self.total_number_of_nodes = self.num_of_nodes_x * self.num_of_nodes_y
         self.coordinates = np.empty((self.total_number_of_nodes, 3))
         self.arr = None
 
@@ -30,8 +31,6 @@ class Landscape:
             print 'The step size in the x- and y-direction is not equal'
             return
         self.step_size = step_size_x
-        self.downslope_neighbors = None
-        self.node_in_trap_index = None
 
 
 def get_node_endpoints_alternative(num_of_cols, num_of_rows, downslope_neighbors):
