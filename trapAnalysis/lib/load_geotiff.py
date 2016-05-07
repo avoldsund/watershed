@@ -154,45 +154,7 @@ def modify_landscape_tyrifjorden(landscape): # Specific changes _ONLY_ for Tyrif
     landscape.coordinates[:, 2] = z
 
 
-def get_lake_river_marsh_information(landscape, lake_file, river_file, small_rivers_file, marsh_file):
-
-    ds_lakes = load_ds(lake_file)
-    ds_rivers = load_ds(river_file)
-    ds_small_rivers = load_ds(small_rivers_file)
-    ds_marsh = load_ds(marsh_file)
-
-    bool_lakes = get_array_from_band(ds_lakes)
-    bool_rivers = get_array_from_band(ds_rivers)
-    bool_small_rivers = get_array_from_band(ds_small_rivers)
-    bool_marsh = get_array_from_band(ds_marsh)
-
-    bool_lakes = bool_lakes[:-1, 1:]
-
-    bool_marsh = bool_marsh[:-2, 1:]
-
-    # THIS IS HORRIBLE CODE THAT ONLY WORKS FOR THIS PROBLEM, NOT GENERAL!!!!!!!!
-    n_rows, n_cols = np.shape(bool_rivers)
-    cols = min(landscape.num_of_nodes_x, n_cols)
-    rows = min(landscape.num_of_nodes_y, n_rows)
-    empty_mat = np.zeros((landscape.num_of_nodes_x, landscape.num_of_nodes_y))
-    empty_mat[0:rows, 0:n_cols] = bool_rivers[0:rows, 0:n_cols]
-    bool_rivers = empty_mat
-
-    bool_small_rivers = bool_small_rivers[0:landscape.num_of_nodes_y, 1:landscape.num_of_nodes_x+1]
-
-    lake_river_marsh = bool_lakes.astype(int) + bool_rivers.astype(int) + \
-                       bool_small_rivers.astype(int) + bool_marsh.astype(int)
-    print 'Max: ', np.max(lake_river_marsh.flatten())
-    print 'Total: ', np.sum(lake_river_marsh.astype(bool))
-    print 'Lake: ', np.sum(bool_lakes.astype(bool))
-    print 'River: ', np.sum(bool_rivers.astype(bool))
-    print 'Small rivers: ', np.sum(bool_small_rivers.astype(bool))
-    print 'Marshes: ', np.sum(bool_marsh.astype(bool))
-
-    return bool_lakes.astype(bool), bool_rivers.astype(bool), bool_small_rivers.astype(bool), bool_marsh.astype(bool)
-
-
-def get_lake_river_marsh_information_new(landscape, lake_file, river_file, small_rivers_file, marsh_file):
+def get_lake_river_marsh_information_tyrifjorden(landscape, lake_file, river_file, small_rivers_file, marsh_file):
     """
     Return a 2d boolean array indicating whether or not there is a lake, a river or a marsh.
     :param landscape: Landscape object.
@@ -208,44 +170,16 @@ def get_lake_river_marsh_information_new(landscape, lake_file, river_file, small
     small_rivers = fit_data_in_landscape_tyrifjorden(landscape, small_rivers_file)
     marshes = fit_data_in_landscape_tyrifjorden(landscape, marsh_file)
 
-    lakes_rivers_marshes = lakes.astype(bool) + rivers.astype(bool) + \
-                           small_rivers.astype(bool) + marshes.astype(bool)
+    # lakes_rivers_marshes = lakes.astype(bool) + rivers.astype(bool) + small_rivers.astype(bool) + marshes.astype(bool)
 
-    print lakes_rivers_marshes
-    print 'Total: ', np.sum(lakes_rivers_marshes)
-    print 'Lake: ', np.sum(lakes)
-    print 'River: ', np.sum(rivers)
-    print 'Small rivers: ', np.sum(small_rivers)
-    print 'Marshes: ', np.sum(marshes)
+    # print lakes_rivers_marshes
+    # print 'Total: ', np.sum(lakes_rivers_marshes)
+    # print 'Lake: ', np.sum(lakes)
+    # print 'River: ', np.sum(rivers)
+    # print 'Small rivers: ', np.sum(small_rivers)
+    # print 'Marshes: ', np.sum(marshes)
 
-    return lakes_rivers_marshes
-
-
-def fit_data_in_landscape(landscape, data_file):
-    """
-    If the additional data, such as lakes or rivers, have a larger grid than the landscape, only the part covering the
-    landscape is used. If the grid is smaller, only the information in the whole grid is used, the rest of the landscape
-    will not get any new information.
-    :param landscape: The landscape object.
-    :param data_file: The information, such as data file over rivers, marshes etc.
-    :return new_data: 2d-grid with 1 or 0 for different fields. 1 if there is a river e.g, 0 if not.
-    """
-
-    data_set = load_ds(data_file)
-    info = DataFileMetadata(data_set)
-
-    # To make it less general, we assume that x_min and y_max for the landscape and the data file
-    # will agree with each other.
-    if (landscape.x_min != info.x_min) or (landscape.y_max != info.y_max):
-        print 'The x-min- or y-max-coordinates do not agree for the data file and the landscape. Aborting.'
-        return
-
-    new_data = np.zeros((landscape.num_of_nodes_y, landscape.num_of_nodes_x), dtype=int)
-    range_x = info.nx if (landscape.num_of_nodes_x >= info.nx) else landscape.num_of_nodes_x
-    range_y = info.ny if (landscape.num_of_nodes_y >= info.ny) else landscape.num_of_nodes_y
-    new_data[0:range_y, 0:range_x] = info.boolean_arr[0:range_y, 0:range_x]
-
-    return new_data
+    return lakes, rivers, small_rivers, marshes
 
 
 def fit_data_in_landscape_tyrifjorden(landscape, data_file):
@@ -274,3 +208,54 @@ def fit_data_in_landscape_tyrifjorden(landscape, data_file):
     info.boolean_arr = new_boolean_arr
 
     return new_boolean_arr
+
+
+def get_lake_river_marsh_information(landscape, lake_file, river_file, small_rivers_file, marsh_file):
+    """
+    Return a 2d boolean array indicating whether or not there is a lake, a river or a marsh.
+    :param landscape: Landscape object.
+    :param lake_file: Data file for lake.
+    :param river_file: Data file for river.
+    :param small_rivers_file: Data file for small rivers.
+    :param marsh_file: Data file for marshes.
+    :return lakes_rivers_marshes: Boolean array saying if there is a lake, a marsh or river.
+    """
+
+    lakes = fit_data_in_landscape(landscape, lake_file)
+    rivers = fit_data_in_landscape(landscape, river_file)
+    small_rivers = fit_data_in_landscape(landscape, small_rivers_file)
+    marshes = fit_data_in_landscape(landscape, marsh_file)
+
+    # There are overlap between lakes, rivers, small rivers and marshes. Good to know!
+    # print 'Lakes, rivers: ', len(np.where(lakes[np.where(lakes == rivers)[0]] == 1)[0])
+    # print 'Lakes, small_rivers: ', len(np.where(lakes[np.where(lakes == small_rivers)[0]] == 1)[0])
+    # print 'Lakes, marshes: ', len(np.where(lakes[np.where(lakes == marshes)[0]] == 1)[0])
+
+    return lakes, rivers, small_rivers, marshes
+
+
+def fit_data_in_landscape(landscape, data_file):
+    """
+    If the additional data, such as lakes or rivers, have a larger grid than the landscape, only the part covering the
+    landscape is used. If the grid is smaller, only the information in the whole grid is used, the rest of the landscape
+    will not get any new information.
+    :param landscape: The landscape object.
+    :param data_file: The information, such as data file over rivers, marshes etc.
+    :return new_data: 2d-grid with 1 or 0 for different fields. 1 if there is a river e.g, 0 if not.
+    """
+
+    data_set = load_ds(data_file)
+    info = DataFileMetadata(data_set)
+
+    # To make it less general, we assume that x_min and y_max for the landscape and the data file
+    # will agree with each other, which, hopefully, they always do.
+    if (landscape.x_min != info.x_min) or (landscape.y_max != info.y_max):
+        print 'The x-min- or y-max-coordinates do not agree for the data file and the landscape. Aborting.'
+        return
+
+    new_data = np.zeros((landscape.num_of_nodes_y, landscape.num_of_nodes_x), dtype=int)
+    range_x = info.nx if (landscape.num_of_nodes_x >= info.nx) else landscape.num_of_nodes_x
+    range_y = info.ny if (landscape.num_of_nodes_y >= info.ny) else landscape.num_of_nodes_y
+    new_data[0:range_y, 0:range_x] = info.boolean_arr[0:range_y, 0:range_x]
+
+    return new_data
