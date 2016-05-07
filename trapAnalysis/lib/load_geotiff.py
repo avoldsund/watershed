@@ -7,31 +7,54 @@ import trap_analysis
 import plot
 
 
-def load_data_set(filename):
+class DataFileMetadata:
+
+    def __init__(self, ds):
+
+        geo_transform = ds.GetGeoTransform()
+        self.nx = ds.RasterXSize
+        self.ny = ds.RasterYSize
+        self.boolean_arr = get_array_from_band(ds, band=1)
+        self.x_min = geo_transform[0]
+        self.y_max = geo_transform[3]
+        self.x_max = self.x_min + geo_transform[1] * (self.nx - 1)
+        self.y_min = self.y_max + geo_transform[5] * (self.ny - 1)
+        self.total_number_of_nodes = self.nx * self.ny
+        step_size_x = geo_transform[1]
+        step_size_y = geo_transform[5]
+        unequal_step_size = (abs(step_size_x) != abs(step_size_y))
+        if unequal_step_size:
+            print 'The step size in the x- and y-direction is not equal.'
+            print 'Make sure that your data is a cartesian grid with points spaced 10 meters apart.'
+            return
+        self.step_size = step_size_x
+
+
+def load_ds(filename):
     """
     Load the geotiff data set from the filename
     :param filename: Name of the tiff file
-    :return data_set: Geotiff data
+    :return ds: Geotiff data
     """
 
-    data_set = gdal.Open(filename)
+    ds = gdal.Open(filename)
 
-    if data_set is None:
+    if ds is None:
         print "Error retrieving data set"
         return
 
-    return data_set
+    return ds
 
 
-def get_array_from_band(data_set, band=1):
+def get_array_from_band(ds, band=1):
     """
     Get data from selected band and remove invalid data points
-    :param data_set: Geotiff data
+    :param ds: Geotiff data
     :param band: Different bands hold different information
     :return arr: The array holding the data
     """
 
-    band = data_set.GetRasterBand(band)
+    band = ds.GetRasterBand(band)
     arr = np.ma.masked_array(band.ReadAsArray())
     no_data_value = band.GetNoDataValue()
 
@@ -39,21 +62,6 @@ def get_array_from_band(data_set, band=1):
         arr[arr == no_data_value] = np.ma.masked
 
     return arr
-
-
-def set_landscape(data_set):
-    """
-    Set the metadata for the landscape grid
-    :param data_set: Geotiff data
-    :return landscape: Object holding metadata for the grid
-    """
-
-    geo_transform = data_set.GetGeoTransform()
-    nx = data_set.RasterXSize - 1  # For avoiding the first column!!!!!!!!!!!!!
-    ny = data_set.RasterYSize - 1  # For avoiding the first column!!!!!!!!!!!!!
-    landscape = trap_analysis.Landscape(geo_transform, nx, ny)
-
-    return landscape
 
 
 def construct_landscape_grid(arr, landscape):
@@ -70,18 +78,17 @@ def construct_landscape_grid(arr, landscape):
         return
 
     # Set x-coordinates, they will be row by row, so the x-grid is repeated
-    x_grid = np.linspace(landscape.x_min + landscape.step_size, landscape.x_max, landscape.num_of_nodes_x)  # For avoiding the first column!!!!!!!!!!!!!
+    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
     x = np.tile(x_grid, landscape.num_of_nodes_y)
     landscape.coordinates[:, 0] = x
 
     # Set y-coordinates, they will be have the same y-value for each row
-    y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y)  # For avoiding the first column!!!!!!!!!!!!!
+    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
     y = np.repeat(y_grid, landscape.num_of_nodes_y)
 
     landscape.coordinates[:, 1] = y
 
     # Set z-coordinates
-    arr = arr[:-1, 1:]  # For avoiding the first column!!!!!!!!!!!!!
     z = np.reshape(arr, (1, np.product(arr.shape)))[0]
     landscape.coordinates[:, 2] = z
 
@@ -95,71 +102,64 @@ def get_landscape(file_name):
     :return landscape: Landscape object
     """
 
-    data_set = load_data_set(file_name)
-    arr = get_array_from_band(data_set)
-    landscape = set_landscape(data_set)
+    ds = load_ds(file_name)
+    arr = get_array_from_band(ds)
+    landscape = trap_analysis.Landscape(ds)
     construct_landscape_grid(arr, landscape)
 
     return landscape
 
 
-def get_lake_river_information(landscape, lake_file, river_file, small_rivers_file):
-
-    ds_lakes = load_data_set(lake_file)
-    ds_rivers = load_data_set(river_file)
-    bool_small_rivers = load_data_set(small_rivers_file)
-    bool_lakes = get_array_from_band(ds_lakes)
-    bool_rivers = get_array_from_band(ds_rivers)
-    bool_small_rivers = get_array_from_band(bool_small_rivers)
-
-    """band = 1
-    band_lakes = ds_lakes.GetRasterBand(band)
-    band_rivers = ds_rivers.GetRasterBand(band)
-
-    no_data_value_lakes = band_lakes.GetNoDataValue()
-    no_data_value_rivers = band_rivers.GetNoDataValue()
-
-    lake_cntr = 0
-    if no_data_value_lakes:
-        bool_lakes[bool_lakes == no_data_value_lakes] = np.ma.masked
-        lake_cntr += 1
-
-    river_cntr = 0
-    if no_data_value_rivers:
-        bool_rivers[bool_rivers == no_data_value_rivers] = np.ma.masked
-        river_cntr += 1
-
-    if river_cntr != 0 or lake_cntr != 0:
-        print "Lakes or rivers have invalid values"
-        return
+def get_landscape_tyrifjorden(file_name):
     """
-    bool_lakes = bool_lakes[:-1, 1:]
+    Return a modified landscape object because the Tyrifjorden area have NaN values for first column and last row
+    :param file_name:
+    :return:
+    """
 
-    # THIS IS HORRIBLE CODE THAT ONLY WORKS FOR THIS PROBLEM, NOT GENERAL!!!!!!!!
-    n_rows, n_cols = np.shape(bool_rivers)
-    cols = min(landscape.num_of_nodes_x, n_cols)
-    rows = min(landscape.num_of_nodes_y, n_rows)
-    empty_mat = np.zeros((landscape.num_of_nodes_x, landscape.num_of_nodes_y))
-    empty_mat[0:rows, 0:n_cols] = bool_rivers[0:rows, 0:n_cols]
-    bool_rivers = empty_mat
+    landscape = get_landscape(file_name)
+    modify_landscape_tyrifjorden(landscape)
 
-    bool_small_rivers = bool_small_rivers[0:landscape.num_of_nodes_y, 0:landscape.num_of_nodes_x]
-    print np.shape(bool_small_rivers)
-    lake_or_river = bool_lakes.astype(bool) + bool_rivers.astype(bool) + bool_small_rivers.astype(bool)
-    print 'Total: ', np.sum(lake_or_river)
-    print 'Lake: ', np.sum(bool_lakes.astype(bool))
-    print 'River: ', np.sum(bool_rivers.astype(bool))
-    print 'Small rivers: ', np.sum(bool_small_rivers.astype(bool))
+    return landscape
 
-    return lake_or_river
+
+def modify_landscape_tyrifjorden(landscape): # Specific changes _ONLY_ for Tyrifjorden, 1. col, last row NaN
+    """
+    Modification necessary for removing the first column and the last row
+    :param landscape: The landscape object to be modified
+    :return:
+    """
+
+    landscape.x_min = landscape.x_min + landscape.step_size
+    landscape.y_min = landscape.y_min + landscape.step_size
+    landscape.num_of_nodes_x -= 1
+    landscape.num_of_nodes_y -= 1
+    landscape.total_number_of_nodes = landscape.num_of_nodes_x * landscape.num_of_nodes_y
+    landscape.arr = landscape.arr[:-1, 1:]
+    landscape.coordinates = np.empty((landscape.total_number_of_nodes, 3))
+
+    # Set x-coordinates, they will be row by row, so the x-grid is repeated
+    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
+    x = np.tile(x_grid, landscape.num_of_nodes_y)
+    landscape.coordinates[:, 0] = x
+
+    # Set y-coordinates, they will be have the same y-value for each row
+    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
+    y = np.repeat(y_grid, landscape.num_of_nodes_y)
+
+    landscape.coordinates[:, 1] = y
+
+    # Set z-coordinates
+    z = np.reshape(landscape.arr, (1, np.product(landscape.arr.shape)))[0]
+    landscape.coordinates[:, 2] = z
 
 
 def get_lake_river_marsh_information(landscape, lake_file, river_file, small_rivers_file, marsh_file):
 
-    ds_lakes = load_data_set(lake_file)
-    ds_rivers = load_data_set(river_file)
-    ds_small_rivers = load_data_set(small_rivers_file)
-    ds_marsh = load_data_set(marsh_file)
+    ds_lakes = load_ds(lake_file)
+    ds_rivers = load_ds(river_file)
+    ds_small_rivers = load_ds(small_rivers_file)
+    ds_marsh = load_ds(marsh_file)
 
     bool_lakes = get_array_from_band(ds_lakes)
     bool_rivers = get_array_from_band(ds_rivers)
@@ -178,14 +178,99 @@ def get_lake_river_marsh_information(landscape, lake_file, river_file, small_riv
     empty_mat[0:rows, 0:n_cols] = bool_rivers[0:rows, 0:n_cols]
     bool_rivers = empty_mat
 
-    bool_small_rivers = bool_small_rivers[0:landscape.num_of_nodes_y, 0:landscape.num_of_nodes_x]
+    bool_small_rivers = bool_small_rivers[0:landscape.num_of_nodes_y, 1:landscape.num_of_nodes_x+1]
 
-    lake_river_marsh = bool_lakes.astype(bool) + bool_rivers.astype(bool) + \
-                       bool_small_rivers.astype(bool) + bool_marsh.astype(bool)
-    print 'Total: ', np.sum(lake_river_marsh)
+    lake_river_marsh = bool_lakes.astype(int) + bool_rivers.astype(int) + \
+                       bool_small_rivers.astype(int) + bool_marsh.astype(int)
+    print 'Max: ', np.max(lake_river_marsh.flatten())
+    print 'Total: ', np.sum(lake_river_marsh.astype(bool))
     print 'Lake: ', np.sum(bool_lakes.astype(bool))
     print 'River: ', np.sum(bool_rivers.astype(bool))
     print 'Small rivers: ', np.sum(bool_small_rivers.astype(bool))
     print 'Marshes: ', np.sum(bool_marsh.astype(bool))
 
     return bool_lakes.astype(bool), bool_rivers.astype(bool), bool_small_rivers.astype(bool), bool_marsh.astype(bool)
+
+
+def get_lake_river_marsh_information_new(landscape, lake_file, river_file, small_rivers_file, marsh_file):
+    """
+    Return a 2d boolean array indicating whether or not there is a lake, a river or a marsh.
+    :param landscape: Landscape object.
+    :param lake_file: Data file for lake.
+    :param river_file: Data file for river.
+    :param small_rivers_file: Data file for small rivers.
+    :param marsh_file: Data file for marshes.
+    :return lakes_rivers_marshes: Boolean array saying if there is a lake, a marsh or river.
+    """
+
+    lakes = fit_data_in_landscape_tyrifjorden(landscape, lake_file)
+    rivers = fit_data_in_landscape_tyrifjorden(landscape, river_file)
+    small_rivers = fit_data_in_landscape_tyrifjorden(landscape, small_rivers_file)
+    marshes = fit_data_in_landscape_tyrifjorden(landscape, marsh_file)
+
+    lakes_rivers_marshes = lakes.astype(bool) + rivers.astype(bool) + \
+                           small_rivers.astype(bool) + marshes.astype(bool)
+
+    print lakes_rivers_marshes
+    print 'Total: ', np.sum(lakes_rivers_marshes)
+    print 'Lake: ', np.sum(lakes)
+    print 'River: ', np.sum(rivers)
+    print 'Small rivers: ', np.sum(small_rivers)
+    print 'Marshes: ', np.sum(marshes)
+
+    return lakes_rivers_marshes
+
+
+def fit_data_in_landscape(landscape, data_file):
+    """
+    If the additional data, such as lakes or rivers, have a larger grid than the landscape, only the part covering the
+    landscape is used. If the grid is smaller, only the information in the whole grid is used, the rest of the landscape
+    will not get any new information.
+    :param landscape: The landscape object.
+    :param data_file: The information, such as data file over rivers, marshes etc.
+    :return new_data: 2d-grid with 1 or 0 for different fields. 1 if there is a river e.g, 0 if not.
+    """
+
+    data_set = load_ds(data_file)
+    info = DataFileMetadata(data_set)
+
+    # To make it less general, we assume that x_min and y_max for the landscape and the data file
+    # will agree with each other.
+    if (landscape.x_min != info.x_min) or (landscape.y_max != info.y_max):
+        print 'The x-min- or y-max-coordinates do not agree for the data file and the landscape. Aborting.'
+        return
+
+    new_data = np.zeros((landscape.num_of_nodes_y, landscape.num_of_nodes_x), dtype=int)
+    range_x = info.nx if (landscape.num_of_nodes_x >= info.nx) else landscape.num_of_nodes_x
+    range_y = info.ny if (landscape.num_of_nodes_y >= info.ny) else landscape.num_of_nodes_y
+    new_data[0:range_y, 0:range_x] = info.boolean_arr[0:range_y, 0:range_x]
+
+    return new_data
+
+
+def fit_data_in_landscape_tyrifjorden(landscape, data_file):
+    """
+    Return the boolean array for the data file, e.g. rivers, lakes etc.
+    :param landscape: The landscape object.
+    :param data_file: The data file with information about lakes or rivers etc.
+    :return new_boolean_arr: The new boolean array where the invalid column and row is removed.
+    """
+
+    ds = load_ds(data_file)
+    info = DataFileMetadata(ds)
+
+    # Remove first column no matter the dimensions
+    info.nx -= 1
+    info.boolean_arr = info.boolean_arr[:, 1:]  # Remove first column
+
+    new_boolean_arr = np.zeros((landscape.num_of_nodes_y, landscape.num_of_nodes_x), dtype=int)
+    range_x = info.nx if (landscape.num_of_nodes_x >= info.nx) else landscape.num_of_nodes_x
+    range_y = info.ny if (landscape.num_of_nodes_y >= info.ny) else landscape.num_of_nodes_y
+    info.ny = range_y
+    info.nx = range_x
+    new_boolean_arr[0:range_y, 0:range_x] = info.boolean_arr[0:range_y, 0:range_x]
+    # This will automatically remove the last row if there are
+    # more rows than in the landscape. If there are less rows, nothing will be affected.
+    info.boolean_arr = new_boolean_arr
+
+    return new_boolean_arr
