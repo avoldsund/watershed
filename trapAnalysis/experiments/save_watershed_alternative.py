@@ -33,12 +33,12 @@ landscape = load_geotiff.get_landscape(heights_file)
 # Get information about lakes, rivers and marshes
 lake_river_marsh = load_geotiff.get_lake_river_marsh_information(
     landscape, lakes_file, rivers_file, small_rivers_file, marshes_file)
-lakes_and_rivers = lake_river_marsh.flatten()
+lakes_rivers_marshes = lake_river_marsh.flatten()
 
 # Get downslope neighbors and modify it with the previous information
 downslope_neighbors = util.get_downslope_indices(landscape.num_of_nodes_x, landscape.num_of_nodes_y,
                                                  landscape.coordinates[:, 2])
-downslope_neighbors[lakes_and_rivers] = -1
+downslope_neighbors[lakes_rivers_marshes] = -1
 
 # Get endpoints
 endpoints = trap_analysis.get_node_endpoints(landscape.num_of_nodes_x, landscape.num_of_nodes_y, downslope_neighbors)
