@@ -171,7 +171,10 @@ def get_lake_river_marsh_information_tyrifjorden(landscape, lake_file, river_fil
     marshes = fit_data_in_landscape_tyrifjorden(landscape, marsh_file)
 
     # lakes_rivers_marshes = lakes.astype(bool) + rivers.astype(bool) + small_rivers.astype(bool) + marshes.astype(bool)
-
+    print lakes
+    print rivers
+    print small_rivers
+    print marshes
     # print lakes_rivers_marshes
     # print 'Total: ', np.sum(lakes_rivers_marshes)
     # print 'Lake: ', np.sum(lakes)
