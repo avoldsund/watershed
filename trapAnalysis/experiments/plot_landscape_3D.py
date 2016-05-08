@@ -8,7 +8,8 @@ Plot the landscape using the landscape object holding (x, y, z)-data in 3 dimens
 """
 
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
-landscape = load_geotiff.get_landscape(file_name)
+
+landscape = load_geotiff.get_landscape_tyrifjorden(file_name)
 downsampling_factor = 1
 
 plot.plot_landscape_3d(landscape, downsampling_factor)

@@ -28,12 +28,15 @@ marshes_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/ander
 """
 
 # Construct landscape object
-landscape = load_geotiff.get_landscape(heights_file)
+landscape = load_geotiff.get_landscape_tyrifjorden(heights_file)
 
 # Get information about lakes, rivers and marshes
-lake_river_marsh = load_geotiff.get_lake_river_marsh_information(
+lakes, rivers, small_rivers, marshes = load_geotiff.get_lake_river_marsh_information_tyrifjorden(
     landscape, lakes_file, rivers_file, small_rivers_file, marshes_file)
-lakes_rivers_marshes = lake_river_marsh.flatten()
+
+lakes_rivers_marshes = lakes.astype(bool) + rivers.astype(bool) + \
+                       small_rivers.astype(bool) + marshes.astype(bool)
+lakes_rivers_marshes = lakes_rivers_marshes.flatten()
 
 # Get downslope neighbors and modify it with the previous information
 downslope_neighbors = util.get_downslope_indices(landscape.num_of_nodes_x, landscape.num_of_nodes_y,
@@ -54,4 +57,4 @@ indices_leading_to_endpoints = trap_analysis.get_indices_leading_to_endpoints(en
 # Get all watersheds
 nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
 
-cPickle.dump(nodes_in_watersheds, open('watershed_using_lake_river_marsh.pkl', 'wb'))
+cPickle.dump(nodes_in_watersheds, open('nodesInWatershedsAlternative.pkl', 'wb'))

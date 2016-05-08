@@ -11,12 +11,12 @@ import util
 saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
 file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
 
-landscape = load_geotiff.get_landscape(file_name)
-
 """
  Plot the watersheds in 2d with the landscape below
 """
 
-nodes_in_watersheds = cPickle.load(open(saved_files + 'nodesInWatersheds.pkl', 'rb'))
+landscape = load_geotiff.get_landscape_tyrifjorden(file_name)
+
+nodes_in_watersheds = cPickle.load(open(saved_files + 'nodesInWatershedsStandard.pkl', 'rb'))
 
 plot.plot_watersheds_2d(nodes_in_watersheds, landscape, 4)

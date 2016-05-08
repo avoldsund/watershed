@@ -23,7 +23,7 @@ file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_h
  Save the watershed using pickle and numpy save.
 """
 
-landscape = load_geotiff.get_landscape(file_name)
+landscape = load_geotiff.get_landscape_tyrifjorden(file_name)
 
 # Get downslope neighbors
 downslope_neighbors = util.get_downslope_indices(landscape.num_of_nodes_x, landscape.num_of_nodes_y,
@@ -42,4 +42,4 @@ indices_leading_to_endpoints = trap_analysis.get_indices_leading_to_endpoints(en
 
 # Get the nodes in the watersheds. Save to file.
 nodes_in_watersheds = trap_analysis.get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
-cPickle.dump(nodes_in_watersheds, open('nodesInWatersheds.pkl', 'wb'))
+cPickle.dump(nodes_in_watersheds, open('nodesInWatershedsStandard.pkl', 'wb'))

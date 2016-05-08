@@ -15,8 +15,11 @@ heights_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/ander
  Make watershed using information about which points in the landscape that are lakes and rivers.
 """
 
-landscape = load_geotiff.get_landscape(heights_file)
+landscape = load_geotiff.get_landscape_tyrifjorden(heights_file)
 
-nodes_in_watersheds = cPickle.load(open(saved_files + 'nodesInWatershedsInclMarshes.pkl', 'rb'))
+nodes_in_watersheds = cPickle.load(open(saved_files + 'nodesInWatershedsAlternative.pkl', 'rb'))
+print 'Total number of watersheds: ', len(nodes_in_watersheds)
+small_watersheds = ([watershed for watershed in nodes_in_watersheds if len(watershed) <= 100])
+print len(small_watersheds)
 
 plot.plot_watersheds_2d_alternative(nodes_in_watersheds, landscape, 4)
