@@ -7,7 +7,7 @@ def get_row_and_col_from_index(node_index, number_of_cols):
     Given an index in the 1d-grid, the row number and column coordinates in the 2d-grid is returned
     :param node_index: Index of node in 1d-grid
     :param number_of_cols: Number of columns in the 2d-grid
-    :return coordinates: The coordinates of the node with index node_index in the 2d-grid, (r, c)
+    :return row_col: The coordinates of the node with index node_index in the 2d-grid, (r, c)
     """
 
     r = node_index/number_of_cols
@@ -18,6 +18,12 @@ def get_row_and_col_from_index(node_index, number_of_cols):
 
 
 def get_row_and_col_from_indices(node_indices, number_of_cols):
+    """
+    Return (r, c) for all indices in node_indices.
+    :param node_indices: Indices in the 1d-grid.
+    :param number_of_cols: Number of columns in the 2d-grid.
+    :return row_col: (r, c) for every index
+    """
 
     row_col = np.empty((len(node_indices), 2), dtype=int)
     row_col[:, 0] = np.divide(node_indices, number_of_cols)
@@ -100,6 +106,12 @@ def get_all_neighbors_interior(num_of_cols, num_of_rows):
 
 
 def get_neighbors_for_interior_indices(indices, num_of_cols):
+    """
+    Returns neighbors for all interior indices in the 2d-grid.
+    :param indices: The indices in the 1d-grid.
+    :param num_of_cols: Number of columns in the 2d-grid.
+    :return neighbors: All neighbors in the 1d-grid for every interior node.
+    """
 
     nr_of_nodes = len(indices)
     neighbors = np.empty((nr_of_nodes, 8), dtype=int)
@@ -119,6 +131,13 @@ def get_neighbors_for_interior_indices(indices, num_of_cols):
 
 
 def get_neighbors_for_indices(indices, num_of_nodes_x, num_of_nodes_y):
+    """
+    Given a vector of arbitrary indices, either at the boundary or interior nodes, return their neighbors.
+    :param indices: Indices in the 1d-grid.
+    :param num_of_nodes_x: Number of nodes in the x-direction
+    :param num_of_nodes_y: Number of nodes in the y-direction
+    :return neighbors: The indices' neighbors.
+    """
 
     neighbors = []
     for index in indices:
