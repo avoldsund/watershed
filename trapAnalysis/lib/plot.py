@@ -7,6 +7,7 @@ import util
 import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import axes3d
 
+
 def plot_landscape_2d(landscape, ds):
     """
     Plot the height of the landscape in 2 dimensions given a landscape object
@@ -16,8 +17,8 @@ def plot_landscape_2d(landscape, ds):
     """
 
     # Construct the (x, y)-coordinate system
-    x_grid = np.linspace(landscape.x_min + landscape.step_size, landscape.x_max, landscape.num_of_nodes_x)
-    y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y)
+    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
+    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
     x, y = np.meshgrid(x_grid[0::ds], y_grid[0::ds])
     z = landscape.arr[0::ds, 0::ds]
 
@@ -45,8 +46,8 @@ def plot_landscape_3d(landscape, ds):
     """
 
     # Construct the (x, y)-coordinate system
-    x_grid = np.linspace(landscape.x_min + landscape.step_size, landscape.x_max, landscape.num_of_nodes_x)
-    y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y)
+    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
+    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
     x, y = np.meshgrid(x_grid[0::ds], y_grid[0::ds])
     z = landscape.arr[0::ds, 0::ds]
 
@@ -121,8 +122,8 @@ def plot_watersheds_3d(nodes_in_watersheds, landscape, ds):
     """
 
     # Construct the (x, y)-coordinate system
-    x_grid = np.linspace(landscape.x_min + landscape.step_size, landscape.x_max, landscape.num_of_nodes_x)
-    y_grid = np.linspace(landscape.y_max, landscape.y_min + landscape.step_size, landscape.num_of_nodes_y)
+    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
+    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
     x_landscape, y_landscape = np.meshgrid(x_grid[0::2], y_grid[0::2])
     z_landscape = landscape.arr[0::2, 0::2]
 
