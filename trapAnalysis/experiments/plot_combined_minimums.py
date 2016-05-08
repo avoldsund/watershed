@@ -8,7 +8,7 @@ import plot
 import util
 
 saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
-file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
+file_name = saved_files + 'anders_hoh.tiff'
 
 """
  Plot all combined minimums in the landscape after doing the standard method.

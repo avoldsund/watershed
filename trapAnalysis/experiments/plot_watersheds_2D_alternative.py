@@ -9,7 +9,7 @@ import load_geotiff
 import plot
 
 saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
-heights_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
+heights_file = saved_files + 'anders_hoh.tiff'
 
 """
  Make watershed using information about which points in the landscape that are lakes and rivers.

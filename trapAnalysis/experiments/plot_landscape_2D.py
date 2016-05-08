@@ -7,7 +7,7 @@ import plot
 Plot the landscape using the landscape object holding (x, y, z)-data in 2 dimensions
 """
 
-file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
+file_name = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/anders_hoh.tiff'
 
 landscape = load_geotiff.get_landscape_tyrifjorden(file_name)
 downsampling_factor = 1

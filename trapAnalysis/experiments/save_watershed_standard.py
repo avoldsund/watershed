@@ -16,7 +16,7 @@ import trap_analysis
 import time
 
 saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
-file_name = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
+file_name = saved_files + 'anders_hoh.tiff'
 
 
 """

@@ -16,12 +16,12 @@ import trap_analysis
 import time
 import plot
 
-#saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
-heights_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_hoh.tiff'
-lakes_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_innsjo.tiff'
-rivers_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_elvbekk.tiff'
-small_rivers_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_elvmidtlinje.tiff'
-marshes_file = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib/anders_myr.tiff'
+saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
+heights_file = saved_files + 'anders_hoh.tiff'
+lakes_file = saved_files + 'anders_innsjo.tiff'
+rivers_file = saved_files + 'anders_elvbekk.tiff'
+small_rivers_file = saved_files + 'anders_elvmidtlinje.tiff'
+marshes_file = saved_files + 'anders_myr.tiff'
 
 
 # Test to see if create landscape works if one doesn't need to remove last row and first column:
