@@ -22,7 +22,7 @@ marshes_file = saved_files + 'anders_myr.tiff'
 landscape = load_geotiff.get_landscape(heights_file)
 
 
-lakes, rivers, small_rivers, marshes = load_geotiff.get_lake_river_marsh_information(
+lakes, rivers, small_rivers, marshes = load_geotiff.get_lake_river_marsh_information_tyrifjorden(
     landscape, lakes_file, rivers_file, small_rivers_file, marshes_file)
 
 lakes = lakes.flatten().astype(int)
