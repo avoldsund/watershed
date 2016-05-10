@@ -22,4 +22,4 @@ print 'Total number of watersheds: ', len(nodes_in_watersheds)
 small_watersheds = ([watershed for watershed in nodes_in_watersheds if len(watershed) <= 100])
 print len(small_watersheds)
 
-plot.plot_watersheds_2d_alternative(nodes_in_watersheds, landscape, 4)
+plot.plot_watersheds_2d_alternative(nodes_in_watersheds, landscape, 1)
