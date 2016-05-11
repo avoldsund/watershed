@@ -271,6 +271,44 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
     return nodes_in_watersheds
 
 
+#def get_spill_points(watersheds):
+#
+#    boundary_nodes = find_boundary_nodes_in_watershed(watershed)
+#    spill_points = get_lowest_boundary_node(boundary_nodes, heights)
+#
+#
+#def get_watershed_connections_by_spill_points(spill_points, watersheds)
+#
+#    get_spill_point_path(spill_point)  # Look at all neighbors to the spill point, remove the ones in the watershed. Find steepest downslope
+#
+#    return adjacency_matrix
+
+
+def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
+    boundary_nodes = []
+    # We need to add the boundary nodes in the 2d-grid as well, not captured by algorithm
+    for watershed in watersheds:
+        neighbors_for_watershed = util.get_neighbors_for_indices_array(watershed, num_of_cols, num_of_rows)
+        neighbors_for_watershed_1d = np.concatenate(neighbors_for_watershed)
+        not_in_watershed = np.in1d(neighbors_for_watershed_1d, watershed, invert=True)
+
+        split_neighbors = np.split(neighbors_for_watershed_1d, len(watershed))
+        split_boolean = np.split(not_in_watershed, len(watershed))
+
+        split_neighbors = [np.asarray([i for i in split if i != -1]) for split in split_neighbors]
+        len_splits = [len(i) for i in split_neighbors]
+        split_boolean = [split_boolean[i][:len_splits[i]] for i in range(len(split_boolean))]
+        foreign_neighbors = [split_neighbors[i][split_boolean[i]] for i in range(len(split_neighbors))]
+        boundary_indices = np.asarray([watershed[i] for i in range(len(foreign_neighbors))
+                                       if len(foreign_neighbors[i]) != 0])
+        landscape_boundary_nodes = util.are_boundary_nodes_bool(watershed, num_of_cols, num_of_rows)
+        whole_boundary = np.unique(np.concatenate((boundary_indices, watershed[landscape_boundary_nodes])))
+        boundary_nodes.append(whole_boundary)
+    print boundary_nodes
+
+    return boundary_nodes
+
+
 def get_watersheds_using_saved_files():
     """
     Does the save as get_watersheds, but using pickled and save data so it doesn't have to redo everything

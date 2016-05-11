@@ -1,6 +1,7 @@
 import sys
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
+path = '/home/anders/Dropbox/watershed/trapAnalysis/'
+sys.path.insert(0, path + 'lib')
+sys.path.insert(0, path + 'util')
 import trap_analysis
 import numpy as np
 import util
@@ -228,6 +229,36 @@ def test_get_nodes_in_watersheds():
     else:
         for i in range(len(watersheds)):
             elements_not_equal = np.array_equal(watersheds[i], result_watersheds[i]) == False
+            if elements_not_equal:
+                are_equal = False
+                break
+
+    assert are_equal
+
+
+def test_get_boundary_nodes_in_watersheds():
+
+    num_of_cols = 6
+    num_of_rows = 5
+    watersheds = [np.array([3, 4, 5, 10, 11]),
+                  np.array([0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
+                  np.array([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])]
+    result_boundary_nodes = [np.array([3, 4, 5, 10, 11]),
+                             np.array([0, 1, 2, 6, 8, 12, 14, 18, 20, 24, 25, 26]),
+                             np.array([9, 15, 16, 17, 21, 23, 27, 28, 29])]
+
+    boundary_nodes = trap_analysis.get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows)
+
+    for i in range(len(boundary_nodes)):
+        boundary_nodes[i] = np.sort(boundary_nodes[i])
+
+    are_equal = True
+
+    if len(boundary_nodes) != len(result_boundary_nodes):
+        are_equal = False
+    else:
+        for i in range(len(watersheds)):
+            elements_not_equal = np.array_equal(boundary_nodes[i], result_boundary_nodes[i]) == False
             if elements_not_equal:
                 are_equal = False
                 break
