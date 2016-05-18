@@ -1,11 +1,13 @@
 import sys
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util')
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
+path = '/home/anders/Dropbox/watershed/trapAnalysis/'
+sys.path.insert(0, path + 'util')
+sys.path.insert(0, '/home/anders/Dropbox/watershedLargeFiles')
 import numpy as np
 import util
 import networkx
 import cPickle
-saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
+import math
+saved_file_dir = '/home/anders/Dropbox/watershedLargeFiles/'
 import time
 
 
@@ -271,22 +273,9 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
     return nodes_in_watersheds
 
 
-#def get_spill_points(watersheds):
-#
-#    boundary_nodes = find_boundary_nodes_in_watershed(watershed)
-#    spill_points = get_lowest_boundary_node(boundary_nodes, heights)
-#
-#
-#def get_watershed_connections_by_spill_points(spill_points, watersheds)
-#
-#    get_spill_point_path(spill_point)  # Look at all neighbors to the spill point, remove the ones in the watershed. Find steepest downslope
-#
-#    return adjacency_matrix
-
-
 def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
     boundary_nodes = []
-    # We need to add the boundary nodes in the 2d-grid as well, not captured by algorithm
+
     for watershed in watersheds:
         neighbors_for_watershed = util.get_neighbors_for_indices_array(watershed, num_of_cols, num_of_rows)
         neighbors_for_watershed_1d = np.concatenate(neighbors_for_watershed)
@@ -304,20 +293,100 @@ def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
         landscape_boundary_nodes = util.are_boundary_nodes_bool(watershed, num_of_cols, num_of_rows)
         whole_boundary = np.unique(np.concatenate((boundary_indices, watershed[landscape_boundary_nodes])))
         boundary_nodes.append(whole_boundary)
-    print boundary_nodes
 
     return boundary_nodes
 
 
-def get_watersheds_using_saved_files():
+def get_spill_points(boundary_nodes_in_watersheds, heights):
+
+    heights_for_indices = [heights[bnd_nodes] for bnd_nodes in boundary_nodes_in_watersheds]
+    spill_points = [boundary_nodes_in_watersheds[i][np.argmin(heights_for_indices[i])] for i in range(len(heights_for_indices))]
+
+    return np.asarray(spill_points)
+
+
+def get_watershed_array(watersheds, number_of_nodes):
     """
-    Does the save as get_watersheds, but using pickled and save data so it doesn't have to redo everything
-    :return nodes_in_watersheds: A list of sets, where each set is a watershed with all its nodes
+    Returns the watershed index for every node.
+    :param watersheds: List of all watersheds.
+    :return watershed_array: Array of length N. Each index represents the watershed number for the node.
     """
 
-    endpoints = np.load(saved_file_dir + 'endpoints.npy')
-    minimums_in_each_watershed = cPickle.load(open(saved_file_dir + 'minimumsInEachWatershed.p', 'rb'))
+    mapping_nodes_to_watersheds = np.empty(number_of_nodes, dtype=int)
 
-    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
+    for i in range(len(watersheds)):
+        mapping_nodes_to_watersheds[watersheds[i]] = i
+
+    return mapping_nodes_to_watersheds
+
+
+def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, num_of_cols, num_of_rows):
+
+    downslope_neighbors_for_spill_points = np.empty(len(spill_points))
+    spill_points_at_boundary = util.are_boundary_nodes_bool(spill_points, num_of_cols, num_of_rows)
+    downslope_neighbors_for_spill_points[spill_points_at_boundary] = spill_points[spill_points_at_boundary]
+
+    interior_indices = np.where(spill_points_at_boundary == False)[0]
+    spill_points_interior = np.setdiff1d(spill_points, spill_points[spill_points_at_boundary])
+    neighbors_of_spill_points = util.get_neighbors_for_interior_indices(spill_points_interior, num_of_cols)
+
+    heights_of_spill_points = np.transpose(np.tile(heights[spill_points_interior], (8, 1)))
+
+    # Calculating the derivatives of all neighbors
+    delta_z = heights_of_spill_points - heights[neighbors_of_spill_points]
+    delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(200)])
+    derivatives = np.divide(delta_z, delta_x)
+
+    for i in range(len(spill_points_interior)):  # For each interior spill point, find the node it is spilling to
+        ws = watersheds[interior_indices[i]]
+        spill_point_neighbors = neighbors_of_spill_points[i]
+        derivatives_neighbors = derivatives[i]
+        foreign_neighbors = np.setdiff1d(spill_point_neighbors, ws, assume_unique=True)
+        indices_of_foreign_neighbors = np.in1d(spill_point_neighbors, foreign_neighbors).nonzero()[0]
+        foreign_derivatives = np.argmax(derivatives_neighbors[indices_of_foreign_neighbors])
+        downslope_foreign_neighbor = indices_of_foreign_neighbors[foreign_derivatives]
+        downslope_neighbors_for_spill_points[interior_indices[i]] = spill_point_neighbors[downslope_foreign_neighbor]
+
+    return downslope_neighbors_for_spill_points
+
+
+def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors, number_of_nodes):
+    """
+    :param watersheds: List of all watersheds in the area.
+    :param downslope_neighbors: The node each spill point is spilling to.
+    :param number_of_nodes: Number of nodes in the grid.
+    :return merged_indices_of_watersheds: List of arrays. Each array contains the indices of the watersheds that
+    should be combined if doing spill point analysis.
+    """
+
+    mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
+    flows_to = mapping_watershed_nodes[downslope_neighbors]
+
+    has_been_merged = np.zeros(len(watersheds))
+
+    merged_indices_of_watersheds = []
+    for i in range(len(watersheds)):
+        if has_been_merged[i] == 0 and flows_to[i] != i:
+            current = i
+            river = [current]
+            next = flows_to[current]
+            while current != next:
+                river.extend([next])
+                current = next
+                next = flows_to[current]
+            river = np.asarray(river, dtype=int)
+            merged_indices_of_watersheds.append(river)
+            has_been_merged[river] = 1
+
+    return merged_indices_of_watersheds
+
+
+def merge_watersheds_using_merged_indices(watersheds, merged_watersheds):
+
+    nodes_in_watersheds = []
+
+    for i in range(len(merged_watersheds)):
+        merged_ws = np.concatenate([watersheds[j] for j in merged_watersheds[i]])
+        nodes_in_watersheds.append(merged_ws)
 
     return nodes_in_watersheds
