@@ -1,13 +1,13 @@
 import sys
-path = '/home/anders/Dropbox/watershed/trapAnalysis/'
+path = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/'
 sys.path.insert(0, path + 'util')
-sys.path.insert(0, '/home/anders/Dropbox/watershedLargeFiles')
+sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
 import numpy as np
 import util
 import networkx
 import cPickle
 import math
-saved_file_dir = '/home/anders/Dropbox/watershedLargeFiles/'
+saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
 import time
 
 
@@ -300,7 +300,8 @@ def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
 def get_spill_points(boundary_nodes_in_watersheds, heights):
 
     heights_for_indices = [heights[bnd_nodes] for bnd_nodes in boundary_nodes_in_watersheds]
-    spill_points = [boundary_nodes_in_watersheds[i][np.argmin(heights_for_indices[i])] for i in range(len(heights_for_indices))]
+    spill_points = [boundary_nodes_in_watersheds[i][np.argmin(heights_for_indices[i])] for i
+                    in range(len(heights_for_indices))]
 
     return np.asarray(spill_points)
 
@@ -322,7 +323,7 @@ def get_watershed_array(watersheds, number_of_nodes):
 
 def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, num_of_cols, num_of_rows):
 
-    downslope_neighbors_for_spill_points = np.empty(len(spill_points))
+    downslope_neighbors_for_spill_points = np.empty(len(spill_points), dtype=int)
     spill_points_at_boundary = util.are_boundary_nodes_bool(spill_points, num_of_cols, num_of_rows)
     downslope_neighbors_for_spill_points[spill_points_at_boundary] = spill_points[spill_points_at_boundary]
 
@@ -350,7 +351,7 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
     return downslope_neighbors_for_spill_points
 
 
-def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors, number_of_nodes):
+def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors, spill_points, number_of_nodes):
     """
     :param watersheds: List of all watersheds in the area.
     :param downslope_neighbors: The node each spill point is spilling to.
@@ -360,23 +361,41 @@ def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbo
     """
 
     mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
-    flows_to = mapping_watershed_nodes[downslope_neighbors]
-
-    has_been_merged = np.zeros(len(watersheds))
+    out_flow = mapping_watershed_nodes[downslope_neighbors]
+    in_flow = mapping_watershed_nodes[spill_points]
+    has_been_merged = np.zeros(len(watersheds), dtype=int)
+    print out_flow
+    print in_flow
 
     merged_indices_of_watersheds = []
     for i in range(len(watersheds)):
-        if has_been_merged[i] == 0 and flows_to[i] != i:
-            current = i
-            river = [current]
-            next = flows_to[current]
-            while current != next:
-                river.extend([next])
-                current = next
-                next = flows_to[current]
-            river = np.asarray(river, dtype=int)
+        if (out_flow[i] != i or in_flow[i] != i) and has_been_merged[i] == 0:
+            current_ws = i
+            start = current_ws
+            river = {current_ws}
+            next_ws = out_flow[current_ws]
+            while current_ws != next_ws and next_ws not in river:  # Following river downstream
+                river.add(next_ws)
+                current_ws = next_ws
+                next_ws = out_flow[current_ws]
+
+            print 'Forward river: ', river
+            current_ws = start
+            prev_ws = in_flow[current_ws]
+            while current_ws != prev_ws and prev_ws not in river:  # Following river upstream
+                river.add(prev_ws)
+                current_ws = prev_ws
+                prev_ws = in_flow[current_ws]
+
+            print 'Forward and backward river: ', river
+            river = np.asarray(list(river), dtype=int)
             merged_indices_of_watersheds.append(river)
             has_been_merged[river] = 1
+
+    print merged_indices_of_watersheds
+    solitary_watersheds = [np.array([i]) for i in range(len(has_been_merged)) if has_been_merged[i] == 0]
+    if solitary_watersheds:
+        merged_indices_of_watersheds.extend(solitary_watersheds)
 
     return merged_indices_of_watersheds
 

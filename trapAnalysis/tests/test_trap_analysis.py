@@ -1,5 +1,5 @@
 import sys
-path = '/home/anders/Dropbox/watershed/trapAnalysis/'
+path = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/'
 sys.path.insert(0, path + 'lib')
 sys.path.insert(0, path + 'util')
 import trap_analysis
@@ -342,7 +342,82 @@ def test_merge_indices_of_watersheds_using_spill_points():
     result_merged_indices = [np.array([0, 2, 3, 5, 6, 7]), np.array([1, 4, 8, 9])]
 
     merged_indices = trap_analysis.merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors,
-                                                                                  number_of_nodes)
+                                                                                  spill_points, number_of_nodes)
+
+    for i in range(len(merged_indices)):
+        merged_indices[i] = np.sort(merged_indices[i])
+
+    are_equal = True
+
+    if len(merged_indices) != len(result_merged_indices):
+        are_equal = False
+    else:
+        for i in range(len(merged_indices)):
+            elements_not_equal = np.array_equal(merged_indices[i], result_merged_indices[i]) == False
+            if elements_not_equal:
+                are_equal = False
+                break
+
+    assert are_equal
+
+
+def test_merge_indices_of_watersheds_using_spill_points_with_loop():
+
+    number_of_nodes = 48
+    watersheds = [np.array([0, 1, 2, 3, 4, 5, 8, 16, 24, 32, 40, 41, 42]),
+                  np.array([6, 7, 15, 23, 31, 39, 43, 44, 45, 46, 47]),
+                  np.array([9, 10, 17, 18]),
+                  np.array([11, 12]),
+                  np.array([13, 14, 22]),
+                  np.array([25, 33, 34]),
+                  np.array([26, 27, 35]),
+                  np.array([19, 20, 28, 36]),
+                  np.array([21, 29, 30]),
+                  np.array([37, 38])]
+    spill_points = np.array([40, 15, 10, 12, 22, 25, 26, 28, 29, 38])
+    downslope_neighbors = np.array([40, 15, 11, 20, 21, 17, 34, 27, 37, 46])
+    result_merged_indices = [np.array([2, 3, 5, 6, 7]), np.array([1, 4, 8, 9]), np.array([0])]
+
+    merged_indices = trap_analysis.merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors,
+                                                                                  spill_points, number_of_nodes)
+
+    for i in range(len(merged_indices)):
+        merged_indices[i] = np.sort(merged_indices[i])
+
+    are_equal = True
+
+    if len(merged_indices) != len(result_merged_indices):
+        are_equal = False
+    else:
+        for i in range(len(merged_indices)):
+            elements_not_equal = np.array_equal(merged_indices[i], result_merged_indices[i]) == False
+            if elements_not_equal:
+                are_equal = False
+                break
+
+    assert are_equal
+
+
+def test_merge_indices_of_watersheds_using_spill_points_upwards_river():
+
+    number_of_nodes = 48
+    watersheds = [np.array([0, 1, 2, 3, 4, 5, 8, 16, 24, 32, 40, 41, 42]),
+                  np.array([6, 7, 15, 23, 31, 39, 43, 44, 45, 46, 47]),
+                  np.array([9, 10, 17, 18]),
+                  np.array([11, 12]),
+                  np.array([13, 14, 22]),
+                  np.array([25, 33, 34]),
+                  np.array([26, 27, 35]),
+                  np.array([19, 20, 28, 36]),
+                  np.array([21, 29, 30]),
+                  np.array([37, 38])]
+    spill_points = np.array([40, 15, 10, 12, 14, 25, 26, 28, 30, 37])
+    downslope_neighbors = np.array([40, 15, 11, 20, 7, 17, 34, 27, 22, 29])
+    result_merged_indices = [np.array([2, 3, 5, 6, 7]), np.array([1, 4, 8, 9]), np.array([0])]
+
+    merged_indices = trap_analysis.merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors,
+                                                                                  spill_points, number_of_nodes)
+
 
     for i in range(len(merged_indices)):
         merged_indices[i] = np.sort(merged_indices[i])
@@ -396,3 +471,5 @@ def test_merge_watersheds_using_merged_indices():
                 break
 
     assert are_equal
+
+
