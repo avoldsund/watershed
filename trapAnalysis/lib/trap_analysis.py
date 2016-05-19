@@ -323,10 +323,12 @@ def get_watershed_array(watersheds, number_of_nodes):
 
 def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, num_of_cols, num_of_rows):
 
-    downslope_neighbors_for_spill_points = np.empty(len(spill_points), dtype=int)
+    # Spill points at the boundary spills to the watershed it is located in.
+    out_flow = np.empty(len(spill_points), dtype=int)
     spill_points_at_boundary = util.are_boundary_nodes_bool(spill_points, num_of_cols, num_of_rows)
-    downslope_neighbors_for_spill_points[spill_points_at_boundary] = spill_points[spill_points_at_boundary]
+    out_flow[spill_points_at_boundary] = spill_points[spill_points_at_boundary]
 
+    # Get all interior spill points and their neighbors
     interior_indices = np.where(spill_points_at_boundary == False)[0]
     spill_points_interior = np.setdiff1d(spill_points, spill_points[spill_points_at_boundary])
     neighbors_of_spill_points = util.get_neighbors_for_interior_indices(spill_points_interior, num_of_cols)
@@ -338,20 +340,31 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
     delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(200)])
     derivatives = np.divide(delta_z, delta_x)
 
+    mapping_nodes_to_watersheds = get_watershed_array(watersheds, num_of_cols * num_of_rows)
+    in_flow = np.ones(len(spill_points), dtype=int) * -1
+
     for i in range(len(spill_points_interior)):  # For each interior spill point, find the node it is spilling to
         ws = watersheds[interior_indices[i]]
         spill_point_neighbors = neighbors_of_spill_points[i]
-        derivatives_neighbors = derivatives[i]
-        foreign_neighbors = np.setdiff1d(spill_point_neighbors, ws, assume_unique=True)
+        derivatives_of_neighbors = derivatives[i]
+        foreign_neighbors = np.setdiff1d(spill_point_neighbors, ws, assume_unique=True)  # Remove neighbors in the ws
         indices_of_foreign_neighbors = np.in1d(spill_point_neighbors, foreign_neighbors).nonzero()[0]
-        foreign_derivatives = np.argmax(derivatives_neighbors[indices_of_foreign_neighbors])
+        foreign_derivatives = np.argmax(derivatives_of_neighbors[indices_of_foreign_neighbors])  # Find nbr in another ws
+        # that will be the downslope neighbor
         downslope_foreign_neighbor = indices_of_foreign_neighbors[foreign_derivatives]
-        downslope_neighbors_for_spill_points[interior_indices[i]] = spill_point_neighbors[downslope_foreign_neighbor]
 
-    return downslope_neighbors_for_spill_points
+        flowing_to_ws = mapping_nodes_to_watersheds[spill_point_neighbors[downslope_foreign_neighbor]]
+
+        in_flow[flowing_to_ws] = spill_points_interior[i]
+
+        out_flow[interior_indices[i]] = spill_point_neighbors[downslope_foreign_neighbor]
+
+    in_flow[np.where(in_flow == -1)[0]] = spill_points[np.where(in_flow == -1)[0]]
+
+    return out_flow, in_flow
 
 
-def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors, spill_points, number_of_nodes):
+def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors, in_flow_indices, number_of_nodes):
     """
     :param watersheds: List of all watersheds in the area.
     :param downslope_neighbors: The node each spill point is spilling to.
@@ -362,10 +375,8 @@ def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbo
 
     mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
     out_flow = mapping_watershed_nodes[downslope_neighbors]
-    in_flow = mapping_watershed_nodes[spill_points]
+    in_flow = mapping_watershed_nodes[in_flow_indices]
     has_been_merged = np.zeros(len(watersheds), dtype=int)
-    print out_flow
-    print in_flow
 
     merged_indices_of_watersheds = []
     for i in range(len(watersheds)):
@@ -379,7 +390,6 @@ def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbo
                 current_ws = next_ws
                 next_ws = out_flow[current_ws]
 
-            print 'Forward river: ', river
             current_ws = start
             prev_ws = in_flow[current_ws]
             while current_ws != prev_ws and prev_ws not in river:  # Following river upstream
@@ -387,8 +397,8 @@ def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbo
                 current_ws = prev_ws
                 prev_ws = in_flow[current_ws]
 
-            print 'Forward and backward river: ', river
             river = np.asarray(list(river), dtype=int)
+
             merged_indices_of_watersheds.append(river)
             has_been_merged[river] = 1
 

@@ -318,7 +318,7 @@ def test_get_downslope_neighbors_for_spill_points():
 
     result_downslope_neighbors = np.array([5, 27, 23])
 
-    downslope_neighbors = trap_analysis.get_downslope_neighbors_for_spill_points(
+    downslope_neighbors, in_flow = trap_analysis.get_downslope_neighbors_for_spill_points(
             spill_points, heights, watersheds, nx, ny)
 
     assert np.array_equal(downslope_neighbors, result_downslope_neighbors)
@@ -337,12 +337,12 @@ def test_merge_indices_of_watersheds_using_spill_points():
                   np.array([19, 20, 28, 36]),
                   np.array([21, 29, 30]),
                   np.array([37, 38])]
-    spill_points = np.array([40, 15, 10, 12, 22, 25, 26, 28, 29, 38])
+    in_flow = np.array([40, 15, 10, 10, 22, 26, 28, 12, 22, 29])
     downslope_neighbors = np.array([40, 15, 11, 20, 21, 24, 34, 27, 37, 46])
     result_merged_indices = [np.array([0, 2, 3, 5, 6, 7]), np.array([1, 4, 8, 9])]
 
     merged_indices = trap_analysis.merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors,
-                                                                                  spill_points, number_of_nodes)
+                                                                                  in_flow, number_of_nodes)
 
     for i in range(len(merged_indices)):
         merged_indices[i] = np.sort(merged_indices[i])
@@ -374,12 +374,12 @@ def test_merge_indices_of_watersheds_using_spill_points_with_loop():
                   np.array([19, 20, 28, 36]),
                   np.array([21, 29, 30]),
                   np.array([37, 38])]
-    spill_points = np.array([40, 15, 10, 12, 22, 25, 26, 28, 29, 38])
+    in_flow = np.array([40, 15, 25, 10, 22, 26, 28, 12, 22, 29])
     downslope_neighbors = np.array([40, 15, 11, 20, 21, 17, 34, 27, 37, 46])
     result_merged_indices = [np.array([2, 3, 5, 6, 7]), np.array([1, 4, 8, 9]), np.array([0])]
 
     merged_indices = trap_analysis.merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors,
-                                                                                  spill_points, number_of_nodes)
+                                                                                  in_flow, number_of_nodes)
 
     for i in range(len(merged_indices)):
         merged_indices[i] = np.sort(merged_indices[i])
@@ -411,13 +411,13 @@ def test_merge_indices_of_watersheds_using_spill_points_upwards_river():
                   np.array([19, 20, 28, 36]),
                   np.array([21, 29, 30]),
                   np.array([37, 38])]
-    spill_points = np.array([40, 15, 10, 12, 14, 25, 26, 28, 30, 37])
+    in_flow = np.array([40, 15, 25, 10, 30, 26, 28, 12, 37, 38])
     downslope_neighbors = np.array([40, 15, 11, 20, 7, 17, 34, 27, 22, 29])
     result_merged_indices = [np.array([2, 3, 5, 6, 7]), np.array([1, 4, 8, 9]), np.array([0])]
 
     merged_indices = trap_analysis.merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors,
-                                                                                  spill_points, number_of_nodes)
-
+                                                                                  in_flow,
+                                                                                  number_of_nodes)
 
     for i in range(len(merged_indices)):
         merged_indices[i] = np.sort(merged_indices[i])
