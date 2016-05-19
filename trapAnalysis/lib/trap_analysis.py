@@ -352,11 +352,8 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
         foreign_derivatives = np.argmax(derivatives_of_neighbors[indices_of_foreign_neighbors])  # Find nbr in another ws
         # that will be the downslope neighbor
         downslope_foreign_neighbor = indices_of_foreign_neighbors[foreign_derivatives]
-
         flowing_to_ws = mapping_nodes_to_watersheds[spill_point_neighbors[downslope_foreign_neighbor]]
-
         in_flow[flowing_to_ws] = spill_points_interior[i]
-
         out_flow[interior_indices[i]] = spill_point_neighbors[downslope_foreign_neighbor]
 
     in_flow[np.where(in_flow == -1)[0]] = spill_points[np.where(in_flow == -1)[0]]
@@ -376,38 +373,50 @@ def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbo
     mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
     out_flow = mapping_watershed_nodes[downslope_neighbors]
     in_flow = mapping_watershed_nodes[in_flow_indices]
-    has_been_merged = np.zeros(len(watersheds), dtype=int)
+    new_watershed_number = np.ones(len(watersheds), dtype=int) * -1
+    new_watershed_counter = 0
 
-    merged_indices_of_watersheds = []
     for i in range(len(watersheds)):
-        if (out_flow[i] != i or in_flow[i] != i) and has_been_merged[i] == 0:
-            current_ws = i
-            start = current_ws
-            river = {current_ws}
-            next_ws = out_flow[current_ws]
-            while current_ws != next_ws and next_ws not in river:  # Following river downstream
+        current_ws = i
+        next_ws = out_flow[current_ws]  # Spilling from current_ws to next_ws
+        river = {current_ws}
+        found_river = False
+        while current_ws != next_ws and next_ws not in river:  # Following river downstream
+            if new_watershed_number[next_ws] != -1:  # Found existing river
+                new_watershed_number[list(river)] = new_watershed_number[next_ws]
+                river = {i}
+                found_river = True
+                break
+            else:
                 river.add(next_ws)
                 current_ws = next_ws
                 next_ws = out_flow[current_ws]
 
-            current_ws = start
-            prev_ws = in_flow[current_ws]
-            while current_ws != prev_ws and prev_ws not in river:  # Following river upstream
+        current_ws = i
+        prev_ws = in_flow[i]
+        while current_ws != prev_ws and prev_ws not in river:  # Following river upstream
+            if new_watershed_number[prev_ws] != -1:
+                new_watershed_number[list(river)] = new_watershed_number[prev_ws]
+                found_river = True
+                river = {}
+                break
+            else:
                 river.add(prev_ws)
                 current_ws = prev_ws
                 prev_ws = in_flow[current_ws]
 
-            river = np.asarray(list(river), dtype=int)
+        if not found_river:
+            new_watershed_number[list(river)] = new_watershed_counter
+            new_watershed_counter += 1
 
-            merged_indices_of_watersheds.append(river)
-            has_been_merged[river] = 1
+    indices = np.arange(0, len(watersheds), 1)
+    unique, counts = np.unique(new_watershed_number, return_counts=True)
+    merged_indices_of_watersheds = np.column_stack((indices, new_watershed_number))
+    p = merged_indices_of_watersheds[np.argsort(merged_indices_of_watersheds[:, 1])]
 
-    print merged_indices_of_watersheds
-    solitary_watersheds = [np.array([i]) for i in range(len(has_been_merged)) if has_been_merged[i] == 0]
-    if solitary_watersheds:
-        merged_indices_of_watersheds.extend(solitary_watersheds)
+    new_watershed_indices = np.split(p[:, 0], np.cumsum(counts))[0:-1]
 
-    return merged_indices_of_watersheds
+    return new_watershed_indices
 
 
 def merge_watersheds_using_merged_indices(watersheds, merged_watersheds):

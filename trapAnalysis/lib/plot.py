@@ -90,18 +90,18 @@ def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
     color_list = iter(color_list * (nr_of_large_watersheds/3))
 
     # Plotting all watersheds except the 10 largest
-    for i in range(nr_of_large_watersheds - 10):
+    for i in range(nr_of_large_watersheds):
         row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
         plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
                     landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
                     color=next(color_list), s=30, lw=0, alpha=0.7)
 
     # Plot the 10 largest watersheds indigo colored
-    for i in range(nr_of_large_watersheds-10, nr_of_large_watersheds):
-        row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
-        plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
-                    landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
-                    color='indigo', s=30, lw=0, alpha=0.7)
+    #for i in range(nr_of_large_watersheds-10, nr_of_large_watersheds):
+    #    row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
+    #    plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
+    #                landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
+    #                color='indigo', s=30, lw=0, alpha=0.7)
 
     plt.rcParams.update({'font.size': 14})
     plt.title('All watersheds with over 100 nodes')
