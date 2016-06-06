@@ -360,15 +360,13 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
 
     return out_flow, in_flow
 
-
+"""
 def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors, in_flow_indices, number_of_nodes):
-    """
     :param watersheds: List of all watersheds in the area.
     :param downslope_neighbors: The node each spill point is spilling to.
     :param number_of_nodes: Number of nodes in the grid.
     :return merged_indices_of_watersheds: List of arrays. Each array contains the indices of the watersheds that
     should be combined if doing spill point analysis.
-    """
 
     mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
     out_flow = mapping_watershed_nodes[downslope_neighbors]
@@ -415,8 +413,38 @@ def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbo
     p = merged_indices_of_watersheds[np.argsort(merged_indices_of_watersheds[:, 1])]
 
     new_watershed_indices = np.split(p[:, 0], np.cumsum(counts))[0:-1]
+    print new_watershed_indices
 
     return new_watershed_indices
+"""
+
+
+def merge_indices_of_watersheds_graph(watersheds, number_of_nodes, in_flow_indices, out_flow_indices):
+    """
+    Combines the watersheds with connecting rivers.
+    :param watersheds: The nodes of all watersheds.
+    :param number_of_nodes: Total number of nodes in the landscape.
+    :param in_flow_indices: Index of node leading into the watershed. Equal to spill point node if no river is
+    leading into it.
+    :param out_flow_indices: Index of the node the watershed is flowing to.
+    :return merged_indices: The indices of the watersheds that are connected.
+    """
+
+    mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
+    in_flow = mapping_watershed_nodes[in_flow_indices]
+    out_flow = mapping_watershed_nodes[out_flow_indices]
+
+    ws_graph = networkx.Graph()
+    ws_graph.add_nodes_from(np.arange(0, len(watersheds), 1))
+
+    for i in range(len(in_flow)):
+        ws_graph.add_edge(in_flow[i], i)
+        ws_graph.add_edge(out_flow[i], i)
+
+    merged_indices = sorted(networkx.connected_components(ws_graph))
+    merged_indices = [np.array(list(el)) for el in merged_indices]
+
+    return merged_indices
 
 
 def merge_watersheds_using_merged_indices(watersheds, merged_watersheds):
