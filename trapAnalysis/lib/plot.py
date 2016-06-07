@@ -82,6 +82,59 @@ def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
 
     # Only plot watersheds with more than n nodes
     large_watersheds = [watershed for watershed in nodes_in_watersheds
+                        if len(watershed) > 0]
+    large_watersheds.sort(key=len)
+    nr_of_large_watersheds = len(large_watersheds)
+
+    color_list = ['red', 'green', 'blue', 'yellow']
+    color_list = iter(color_list * (nr_of_large_watersheds/3))
+
+    # Plotting all watersheds except the 10 largest
+    for i in range(nr_of_large_watersheds):
+        row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
+        plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
+                    landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
+                    color=next(color_list), s=30, lw=0, alpha=0.7)
+
+    # Plot the 10 largest watersheds indigo colored
+    #for i in range(nr_of_large_watersheds-10, nr_of_large_watersheds):
+    #    row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
+    #    plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
+    #                landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
+    #                color='indigo', s=30, lw=0, alpha=0.7)
+
+    plt.rcParams.update({'font.size': 14})
+    plt.title('All watersheds with over 100 nodes')
+    plt.xlabel('x')
+    plt.ylabel('y')
+
+    plt.show()
+
+
+def plot_watersheds_and_spill_points_2d(nodes_in_watersheds, in_flow, out_flow, landscape, ds):
+    """
+    Plot all or some watersheds in the landscape using different colors for different watersheds in 2D. Using the
+    standard method.
+    :param nodes_in_watersheds: List of arrays. Each array have all indices in the watershed.
+    :param landscape: Landscape object with all data.
+    :param ds: Downsampling factor for only plotting every ds point.
+    :return: Plot watersheds in 2D using the standard method.
+    """
+
+    # Construct the (x, y)-coordinate system
+    x_grid = np.linspace(landscape.x_min, landscape.x_max, landscape.num_of_nodes_x)
+    y_grid = np.linspace(landscape.y_max, landscape.y_min, landscape.num_of_nodes_y)
+    x, y = np.meshgrid(x_grid[0::ds], y_grid[0::ds])
+    z = landscape.arr[0::ds, 0::ds]
+
+    # Plotting the terrain in the background
+    cmap = plt.get_cmap('terrain')
+    v = np.linspace(min(landscape.coordinates[:, 2]), max(landscape.coordinates[:, 2]), 100, endpoint=True)
+    plt.contourf(x, y, z, v, cmap=cmap)
+    plt.colorbar(label='Height', spacing='uniform')
+
+    # Only plot watersheds with more than n nodes
+    large_watersheds = [watershed for watershed in nodes_in_watersheds
                         if len(watershed) > 100]
     large_watersheds.sort(key=len)
     nr_of_large_watersheds = len(large_watersheds)
@@ -95,6 +148,16 @@ def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
         plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
                     landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
                     color=next(color_list), s=30, lw=0, alpha=0.7)
+
+    row_col_in = util.get_row_and_col_from_indices(in_flow, landscape.num_of_nodes_x)
+    row_col_out = util.get_row_and_col_from_indices(out_flow, landscape.num_of_nodes_x)
+
+    plt.scatter(landscape.x_min + row_col_in[:, 1] * landscape.step_size,
+                landscape.y_max - row_col_in[:, 0] * landscape.step_size,
+                color='aqua', s=25, lw=0, alpha=1)
+    plt.scatter(landscape.x_min + row_col_out[:, 1] * landscape.step_size,
+                landscape.y_max - row_col_out[:, 0] * landscape.step_size,
+                color='salmon', s=20, lw=0, alpha=1)
 
     # Plot the 10 largest watersheds indigo colored
     #for i in range(nr_of_large_watersheds-10, nr_of_large_watersheds):
@@ -345,5 +408,51 @@ def plot_watersheds_and_lakes_rivers_marshes(landscape, nodes_in_watersheds, ds,
     plt.title('All watersheds with over 100 nodes, using information about lakes, rivers and marshes')
     plt.xlabel('x')
     plt.ylabel('y')
+
+    plt.show()
+
+
+def plot_landscape_2d_without_landscape_object(heights2d, heights1d, xmin, xmax, ymin, ymax, nx, ny, ds):
+
+    # Construct the (x, y)-coordinate system
+    x_grid = np.linspace(xmin, xmax, nx)
+    y_grid = np.linspace(ymax, ymin, ny)
+    x, y = np.meshgrid(x_grid[0::ds], y_grid[0::ds])
+    z = heights2d
+
+    # Decide color map and number of contour levels
+    cmap = plt.get_cmap('terrain')
+    v = np.linspace(min(heights1d), max(heights1d), 100, endpoint=True)
+    plt.contourf(x, y, z, v, cmap=cmap)
+    plt.colorbar(label='Height', spacing='uniform')
+
+    # Title and labels
+    plt.rcParams.update({'font.size': 14})
+    plt.title('The landscape')
+    plt.xlabel('x')
+    plt.ylabel('y')
+
+    plt.show()
+
+
+def plot_landscape_3d_without_landscape_object(heights2d, xmin, xmax, ymin, ymax, nx, ny, ds):
+
+    # Construct the (x, y)-coordinate system
+    x_grid = np.linspace(xmin, xmax, nx)
+    y_grid = np.linspace(ymax, ymin, ny)
+    fig = plt.figure()
+    X, Y = np.meshgrid(x_grid[0::ds], y_grid[0::ds])
+
+    #ax = fig.add_subplot(111, projection='3d')
+
+    #ax.plot_wireframe(X, Y, heights2d, rstride=1, cstride=1)
+
+    ax = fig.gca(projection='3d')
+    surf = ax.plot_surface(X, Y, heights2d, rstride=1, cstride=1, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)
+    plt.show()
+    # Plot (x, y, z) in 3D
+    #fig, ax = plt.subplots(subplot_kw=dict(projection='3d'))
+    #ax.plot_surface(x, y, heights2d, cmap=plt.get_cmap('terrain'))
 
     plt.show()
