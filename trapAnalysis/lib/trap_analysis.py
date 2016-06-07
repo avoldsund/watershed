@@ -9,6 +9,7 @@ import cPickle
 import math
 saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
 import time
+import matplotlib.pyplot as plt
 
 
 class Landscape:
@@ -274,6 +275,14 @@ def get_watersheds(heights, num_of_cols, num_of_rows):
 
 
 def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
+    """
+    Return the boundary nodes of the watershed, i.e. nodes bordering to other watersheds or to the landscape border.
+    :param watersheds: Nodes of each watershed.
+    :param num_of_cols: Number of nodes in the x-direction.
+    :param num_of_rows: Number of nodes in the y-direction.
+    :return boundary_nodes: The boundary nodes for each watershed.
+    """
+
     boundary_nodes = []
 
     for watershed in watersheds:
@@ -283,6 +292,8 @@ def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
 
         split_neighbors = np.split(neighbors_for_watershed_1d, len(watershed))
         split_boolean = np.split(not_in_watershed, len(watershed))
+
+        watershed = np.sort(watershed)
 
         split_neighbors = [np.asarray([i for i in split if i != -1]) for split in split_neighbors]
         len_splits = [len(i) for i in split_neighbors]
@@ -349,8 +360,8 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
         derivatives_of_neighbors = derivatives[i]
         foreign_neighbors = np.setdiff1d(spill_point_neighbors, ws, assume_unique=True)  # Remove neighbors in the ws
         indices_of_foreign_neighbors = np.in1d(spill_point_neighbors, foreign_neighbors).nonzero()[0]
-        foreign_derivatives = np.argmax(derivatives_of_neighbors[indices_of_foreign_neighbors])  # Find nbr in another ws
-        # that will be the downslope neighbor
+        foreign_derivatives = np.argmax(derivatives_of_neighbors[indices_of_foreign_neighbors])  # Find nbr in another
+        # ws that will be the downslope neighbor
         downslope_foreign_neighbor = indices_of_foreign_neighbors[foreign_derivatives]
         flowing_to_ws = mapping_nodes_to_watersheds[spill_point_neighbors[downslope_foreign_neighbor]]
         in_flow[flowing_to_ws] = spill_points_interior[i]
@@ -456,3 +467,22 @@ def merge_watersheds_using_merged_indices(watersheds, merged_watersheds):
         nodes_in_watersheds.append(merged_ws)
 
     return nodes_in_watersheds
+
+
+def do_spill_point_analysis(heights, nx, ny):
+
+    downslope_neighbors = util.get_downslope_indices(nx, ny, heights)
+    endpoints = get_node_endpoints(nx, ny, downslope_neighbors)
+    minimum_indices = np.where(downslope_neighbors == -1)[0]
+    minimums_in_each_watershed = sorted(get_minimums_in_watersheds(minimum_indices, nx, ny))
+    # indices_leading_to_endpoints = get_indices_leading_to_endpoints(endpoints)
+    nodes_in_watersheds = get_nodes_in_watersheds(endpoints, minimums_in_each_watershed)
+
+    # Do spill point analysis
+    boundary_nodes = get_boundary_nodes_in_watersheds(nodes_in_watersheds, nx, ny)
+    spill_points = get_spill_points(boundary_nodes, heights)
+    out_flow, in_flow = get_downslope_neighbors_for_spill_points(spill_points, heights, nodes_in_watersheds, nx, ny)
+    merged_indices = merge_indices_of_watersheds_graph(nodes_in_watersheds, nx*ny, in_flow, out_flow)
+    new_watersheds = merge_watersheds_using_merged_indices(nodes_in_watersheds, merged_indices)
+
+    return new_watersheds
