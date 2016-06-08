@@ -277,6 +277,91 @@ def get_interior_indices(num_of_cols, num_of_rows):
     return interior_indices
 
 
+def get_different_boundaries(nx, ny):
+    """
+    Returns indices for the different boundary types: corners, top, right, bottom, left.
+    :param nx: Number of columns.
+    :param ny: Number of rows.
+    :return corners, top, right, bottom, left: Arrays with the indices of the different boundaries.
+    """
+
+    total_nodes = nx * ny
+
+    corners = np.array([0, nx - 1, total_nodes - nx, total_nodes - 1])
+    top_wo_corners = np.arange(1, nx - 1, 1)
+    bottom_wo_corners = np.arange(total_nodes - nx + 1, total_nodes - 1, 1)
+    left_wo_corners = np.arange(nx, total_nodes - nx, nx)
+    right_wo_corners = np.arange(2 * nx - 1, nx * ny - 1, nx)
+
+    return corners, top_wo_corners, right_wo_corners, bottom_wo_corners, left_wo_corners
+
+
+def get_neighbors_derivatives_dictionary(heights, nx, ny):
+    """
+    Returns a dictionary where the key is the index of the node, and the value is (neighbor_indices, derivatives)
+    :param heights: Heights of all nodes in the grid.
+    :param nx: Number of columns.
+    :param ny: Number of rows.
+    :return dict:
+    """
+
+    neighbors_derivatives_dict = {}
+
+    corners, top, right, bottom, left = get_different_boundaries(nx, ny)
+    interior = get_interior_indices(nx, ny)
+
+    corner_nbrs = np.array(get_neighbors_for_indices(corners, nx, ny))
+    top_nbrs = np.array(get_neighbors_for_indices(top, nx, ny))
+    right_nbrs = np.array(get_neighbors_for_indices(right, nx, ny))
+    bottom_nbrs = np.array(get_neighbors_for_indices(bottom, nx, ny))
+    left_nbrs = np.array(get_neighbors_for_indices(left, nx, ny))
+    interior_nbrs = get_neighbors_for_interior_indices(interior, nx)
+
+    corner_distance = np.array([[10, 10, math.sqrt(200)],
+                                [10, math.sqrt(200), 10],
+                                [10, math.sqrt(200), 10],
+                                [math.sqrt(200), 10, 10]])
+    top_distance = np.array([10, 10, math.sqrt(200), 10, math.sqrt(200)])
+    right_distance = np.roll(top_distance, 1)
+    left_distance = np.roll(top_distance, 2)
+    bottom_distance = np.roll(top_distance, 3)
+    interior_distance = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(200)])
+
+    corner_delta_height = np.subtract((np.array([heights[corners]])).T, heights[corner_nbrs])
+    top_delta_height = np.subtract((np.array([heights[top]])).T, heights[top_nbrs])
+    right_delta_height = np.subtract((np.array([heights[right]])).T, heights[right_nbrs])
+    bottom_delta_height = np.subtract((np.array([heights[bottom]])).T, heights[bottom_nbrs])
+    left_delta_height = np.subtract((np.array([heights[left]])).T, heights[left_nbrs])
+    interior_delta_height = np.subtract((np.array([heights[interior]])).T, heights[interior_nbrs])
+
+    corner_derivatives = np.divide(corner_delta_height, corner_distance)
+    top_derivatives = np.divide(top_delta_height, top_distance)
+    right_derivatives = np.divide(right_delta_height, right_distance)
+    bottom_derivatives = np.divide(bottom_delta_height, bottom_distance)
+    left_derivatives = np.divide(left_delta_height, left_distance)
+    interior_derivatives = np.divide(interior_delta_height, interior_distance)
+
+    for i in range(len(corners)):
+        neighbors_derivatives_dict[corners[i]] = (corner_nbrs[i], corner_derivatives[i])
+
+    for i in range(len(top)):
+        neighbors_derivatives_dict[top[i]] = (top_nbrs[i], top_derivatives[i])
+
+    for i in range(len(right)):
+        neighbors_derivatives_dict[right[i]] = (right_nbrs[i], right_derivatives[i])
+
+    for i in range(len(bottom)):
+        neighbors_derivatives_dict[bottom[i]] = (bottom_nbrs[i], bottom_derivatives[i])
+
+    for i in range(len(left)):
+        neighbors_derivatives_dict[left[i]] = (left_nbrs[i], left_derivatives[i])
+
+    for i in range(len(interior)):
+        neighbors_derivatives_dict[interior[i]] = (interior_nbrs[i], interior_derivatives[i])
+
+    return neighbors_derivatives_dict
+
+
 def get_downslope_indices_corners(num_of_cols, num_of_rows, heights):
     """
     Returns the indices of the downslope neighbors for all corners in the grid

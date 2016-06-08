@@ -292,6 +292,72 @@ def test_get_all_neighbors_interior():
     assert np.array_equal(neighbors, result_neighbors)
 
 
+def test_get_different_boundaries():
+
+    nx = 5
+    ny = 5
+
+    result_corners = np.array([0, 4, 20, 24])
+    result_top = np.array([1, 2, 3])
+    result_right = np.array([9, 14, 19])
+    result_bottom = np.array([21, 22, 23])
+    result_left = np.array([5, 10, 15])
+
+    corners, top, right, bottom, left = util.get_different_boundaries(nx, ny)
+
+    are_equal = (np.array_equal(corners, result_corners) and np.array_equal(top, result_top) and
+                 np.array_equal(right, result_right) and np.array_equal(bottom, result_bottom) and
+                 np.array_equal(left, result_left))
+
+    assert are_equal
+
+
+def test_get_neighbors_derivatives_dictionary():
+
+    nx = 3
+    ny = 3
+    heights = np.array([9, 8, 7, 6, 5, 4, 3, 2, 1])
+    b = 2/math.sqrt(200)
+    d = 4/math.sqrt(200)
+
+    result_neighbors_derivatives_dictionary = {0: (np.array([1, 3, 4]),
+                                                   np.array([0.1, 0.3, d], dtype=float)),
+                                               1: (np.array([0, 2, 3, 4, 5]),
+                                                   np.array([-0.1, 0.1, b, 0.3, d], dtype=float)),
+                                               2: (np.array([1, 4, 5]),
+                                                   np.array([-0.1, b, 0.3], dtype=float)),
+                                               3: (np.array([0, 1, 4, 6, 7]),
+                                                   np.array([-0.3, -b, 0.1, 0.3, d], dtype=float)),
+                                               4: (np.array([0, 1, 2, 3, 5, 6, 7, 8]),
+                                                   np.array([-d, -0.3, -b, -0.1, 0.1, b, 0.3, d], dtype=float)),
+                                               5: (np.array([1, 2, 4, 7, 8]),
+                                                   np.array([-d, -0.3, -0.1, b, 0.3], dtype=float)),
+                                               6: (np.array([3, 4, 7]),
+                                                   np.array([-0.3, -b, 0.1], dtype=float)),
+                                               7: (np.array([3, 4, 5, 6, 8]),
+                                                   np.array([-d, -0.3, -b, -0.1, 0.1], dtype=float)),
+                                               8: (np.array([4, 5, 7]),
+                                                   np.array([-d, -0.3, -0.1], dtype=float))}
+
+    neighbors_derivatives_dictionary = util.get_neighbors_derivatives_dictionary(heights, nx, ny)
+
+    are_equal = True
+
+    if len(result_neighbors_derivatives_dictionary) != len(neighbors_derivatives_dictionary):
+        are_equal = False
+    else:
+        for key, value in neighbors_derivatives_dictionary.iteritems():
+            tuples_are_equal = np.array_equal(neighbors_derivatives_dictionary[key][0],
+                                              result_neighbors_derivatives_dictionary[key][0]) and \
+                               np.array_equal(neighbors_derivatives_dictionary[key][1],
+                                              result_neighbors_derivatives_dictionary[key][1])
+            if not tuples_are_equal:
+                are_equal = False
+                break
+
+    assert are_equal
+
+
 def test_get_downslope_indices_interior():
 
     num_of_cols = 5
