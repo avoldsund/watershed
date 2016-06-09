@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
 import util
+import compare_methods
 import numpy as np
 import math
 
@@ -341,19 +342,8 @@ def test_get_neighbors_derivatives_dictionary():
 
     neighbors_derivatives_dictionary = util.get_neighbors_derivatives_dictionary(heights, nx, ny)
 
-    are_equal = True
-
-    if len(result_neighbors_derivatives_dictionary) != len(neighbors_derivatives_dictionary):
-        are_equal = False
-    else:
-        for key, value in neighbors_derivatives_dictionary.iteritems():
-            tuples_are_equal = np.array_equal(neighbors_derivatives_dictionary[key][0],
-                                              result_neighbors_derivatives_dictionary[key][0]) and \
-                               np.array_equal(neighbors_derivatives_dictionary[key][1],
-                                              result_neighbors_derivatives_dictionary[key][1])
-            if not tuples_are_equal:
-                are_equal = False
-                break
+    are_equal = compare_methods.compare_two_dictionaries_where_values_are_tuples_with_two_arrays(
+        neighbors_derivatives_dictionary, result_neighbors_derivatives_dictionary)
 
     assert are_equal
 
