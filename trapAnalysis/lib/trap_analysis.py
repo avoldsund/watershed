@@ -280,7 +280,7 @@ def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
     :param watersheds: Nodes of each watershed.
     :param num_of_cols: Number of nodes in the x-direction.
     :param num_of_rows: Number of nodes in the y-direction.
-    :return boundary_nodes: The boundary nodes for each watershed.
+    :return boundary_nodes: The boundary nodes for each watershed. List of arrays.
     """
 
     boundary_nodes = []
@@ -317,7 +317,7 @@ def get_spill_points(boundary_nodes_in_watersheds, heights):
     return np.asarray(spill_points)
 
 
-def get_watershed_array(watersheds, number_of_nodes):
+def map_nodes_to_watersheds(watersheds, number_of_nodes):
     """
     Returns the watershed index for every node.
     :param watersheds: List of all watersheds.
@@ -332,7 +332,131 @@ def get_watershed_array(watersheds, number_of_nodes):
     return mapping_nodes_to_watersheds
 
 
+def get_external_nbrs_dict_for_watershed(watershed_nr, nbrs_der_dict, watersheds, nx, ny):
+    """
+    Returns a dictionary for all boundary nodes with external neighbors for a watershed.
+    :param watershed_nr: The watershed in question.
+    :param nbrs_der_dict: Dictionary with neighbors and their derivatives for all nodes.
+    :param watersheds: All watersheds.
+    :param nx: Number of columns.
+    :param ny: Number of rows.
+    :return external_dict: Dictionary with neighbors and their derivatives for all boundary nodes with external nbrs.
+    """
+
+    boundary_nodes = get_boundary_nodes_in_watersheds(watersheds, nx, ny)
+    mapping_nodes_to_watersheds = map_nodes_to_watersheds(watersheds, nx * ny)
+    boundary = boundary_nodes[watershed_nr]
+    external_dict = {}
+
+    for b in boundary:
+        nbrs = nbrs_der_dict[b][0]
+        external_nbrs = mapping_nodes_to_watersheds[nbrs] != watershed_nr
+        if len(nbrs_der_dict[b][0][external_nbrs]) != 0:
+            external_dict[b] = (nbrs_der_dict[b][0][external_nbrs], nbrs_der_dict[b][1][external_nbrs])
+
+    return external_dict
+
+
+def get_all_boundary_pairs_for_watershed(external_dict):
+    """
+    Returns all boundary pairs for the watershed.
+    :param external_dict: Dictionary with all neighbors and derivatives for all boundary points with neighbors in
+    other watersheds.
+    :return boundary_pairs: List with tuples, where each tuple is a boundary pair.
+    """
+
+    boundary_pairs = []
+    for key, value in external_dict.iteritems():
+        nbrs = value[0]
+        pair = [(key, nbr) for nbr in nbrs]
+        boundary_pairs.extend(pair)
+
+    return boundary_pairs
+
+
+def get_lowest_height_on_landscape_boundary_for_watershed(watershed, heights, nx, ny):
+    """
+    If the watershed has nodes on the landscape boundary it will return the lowest height. If not, it returns -1.
+    :param watershed: The watershed in question.
+    :param heights: The heights of all nodes.
+    :param nx: Number of nodes in the x-direction.
+    :param ny: Number of nodes in the y-direction.
+    :return min_on_landscape_boundary: A number if it exists, -1 otherwise.
+    """
+
+    landscape_boundary_nodes_in_ws = watershed[util.are_boundary_nodes_bool(watershed, nx, ny)]
+    if len(landscape_boundary_nodes_in_ws) > 0:
+        min_on_landscape_boundary = min(heights[landscape_boundary_nodes_in_ws])
+    else:
+        min_on_landscape_boundary = -1
+
+    return min_on_landscape_boundary
+
+
+def get_min_of_max_of_boundary_pairs(watershed, external_dict, boundary_pairs, heights, nx, ny):
+
+    max_of_boundary_pair = []
+
+    for i in range(len(boundary_pairs)):
+        a = boundary_pairs[i][0]
+        b = boundary_pairs[i][1]
+        max_height = max(heights[a], heights[b])
+        max_of_boundary_pair.append((max_height, boundary_pairs[i]))
+
+    # If there are several tuples with the same max_height, can choose one with the greatest derivative. Not yet done.
+    min_of_max = min(max_of_boundary_pair)
+
+    return min_of_max
+
+
+def get_min_of_max_for_every_watershed(watersheds, heights, nbrs_der_dict, nx, ny):
+
+    ws_graph = networkx.Graph()
+    ws_graph.add_nodes_from(np.arange(0, len(watersheds), 1))
+
+    mapping_nodes_to_watersheds = map_nodes_to_watersheds(watersheds, nx * ny)
+
+    for i in range(len(watersheds)):
+        external_dict = get_external_nbrs_dict_for_watershed(i, nbrs_der_dict, watersheds, nx, ny)
+        boundary_pairs = get_all_boundary_pairs_for_watershed(external_dict)
+        min_of_max = get_min_of_max_of_boundary_pairs(external_dict, boundary_pairs, heights)
+        if min_of_max:  # min_of_max is not None because it spills off the landscape boundary
+            from_node = min_of_max[1][0]
+            to_node = min_of_max[1][1]
+            to_ws = mapping_nodes_to_watersheds[to_node]
+            ws_graph.add_edge(i, to_ws)  # Edge from watershed i to watershed to_ws
+
+    merged_indices = sorted(networkx.connected_components(ws_graph))
+    merged_indices = [np.array(list(el)) for el in merged_indices]
+
+    return merged_indices
+
+
+"""
+def make_global_traps(watersheds, heights, nx, ny):
+
+    boundary_nodes = get_boundary_nodes_in_watersheds(watersheds, nx, ny)
+    heights_of_boundary_nodes = [heights[ws_boundary] for ws_boundary in boundary_nodes]  # List of arrays
+    nbrs_der_dict = util.get_neighbors_derivatives_dictionary(heights, nx, ny)
+    nbrs_der_dict = remove_internal_nbrs(nbrs_der_dict, watersheds)
+
+
+    for i in range(len(watersheds)):
+        boundary = boundary_nodes[i]
+        indices_sorted_boundary = np.argsort(heights_of_boundary_nodes[i])
+        for index in indices_sorted_boundary:
+            lowest_node = boundary[index]
+            temp = nbrs_der_dict[lowest_node]
+            lowest_node_nbrs = temp[0]
+            lowest_node_der = temp[1]
+
+
+        while derivative < 0 and
+"""
+
+
 def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, num_of_cols, num_of_rows):
+    # The downslope neighbor of the spill point must have a positive derivative, otherwise it won't spill anywhere
 
     # Spill points at the boundary spills to the watershed it is located in.
     out_flow = np.empty(len(spill_points), dtype=int)
@@ -341,7 +465,7 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
 
     # Get all interior spill points and their neighbors
     interior_indices = np.where(spill_points_at_boundary == False)[0]
-    spill_points_interior = np.setdiff1d(spill_points, spill_points[spill_points_at_boundary])
+    spill_points_interior = spill_points[interior_indices]
     neighbors_of_spill_points = util.get_neighbors_for_interior_indices(spill_points_interior, num_of_cols)
 
     heights_of_spill_points = np.transpose(np.tile(heights[spill_points_interior], (8, 1)))
@@ -351,25 +475,28 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
     delta_x = np.array([math.sqrt(200), 10, math.sqrt(200), 10, 10, math.sqrt(200), 10, math.sqrt(200)])
     derivatives = np.divide(delta_z, delta_x)
 
-    mapping_nodes_to_watersheds = get_watershed_array(watersheds, num_of_cols * num_of_rows)
-    in_flow = np.ones(len(spill_points), dtype=int) * -1
+    mapping_nodes_to_watersheds = map_nodes_to_watersheds(watersheds, num_of_cols * num_of_rows)
+    #in_flow = np.ones(len(spill_points), dtype=int) * -1
 
     for i in range(len(spill_points_interior)):  # For each interior spill point, find the node it is spilling to
         ws = watersheds[interior_indices[i]]
         spill_point_neighbors = neighbors_of_spill_points[i]
         derivatives_of_neighbors = derivatives[i]
-        foreign_neighbors = np.setdiff1d(spill_point_neighbors, ws, assume_unique=True)  # Remove neighbors in the ws
-        indices_of_foreign_neighbors = np.in1d(spill_point_neighbors, foreign_neighbors).nonzero()[0]
-        foreign_derivatives = np.argmax(derivatives_of_neighbors[indices_of_foreign_neighbors])  # Find nbr in another
-        # ws that will be the downslope neighbor
-        downslope_foreign_neighbor = indices_of_foreign_neighbors[foreign_derivatives]
-        flowing_to_ws = mapping_nodes_to_watersheds[spill_point_neighbors[downslope_foreign_neighbor]]
-        in_flow[flowing_to_ws] = spill_points_interior[i]
-        out_flow[interior_indices[i]] = spill_point_neighbors[downslope_foreign_neighbor]
+        if np.max(derivatives_of_neighbors) < 0:
+            out_flow[i] = spill_points_interior[i]
+        else:
+            foreign_neighbors = np.setdiff1d(spill_point_neighbors, ws, assume_unique=True)  # Remove neighbors in the ws
+            indices_of_foreign_neighbors = np.in1d(spill_point_neighbors, foreign_neighbors).nonzero()[0]
+            foreign_derivatives = np.argmax(derivatives_of_neighbors[indices_of_foreign_neighbors])  # Find nbr in another
+            # ws that will be the downslope neighbor
+            downslope_foreign_neighbor = indices_of_foreign_neighbors[foreign_derivatives]
+            flowing_to_ws = mapping_nodes_to_watersheds[spill_point_neighbors[downslope_foreign_neighbor]]
+            #in_flow[flowing_to_ws] = spill_points_interior[i]
+            out_flow[interior_indices[i]] = spill_point_neighbors[downslope_foreign_neighbor]
 
-    in_flow[np.where(in_flow == -1)[0]] = spill_points[np.where(in_flow == -1)[0]]
+    #in_flow[np.where(in_flow == -1)[0]] = spill_points[np.where(in_flow == -1)[0]]
 
-    return out_flow, in_flow
+    return out_flow#, in_flow
 
 """
 def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbors, in_flow_indices, number_of_nodes):
@@ -379,7 +506,7 @@ def merge_indices_of_watersheds_using_spill_points(watersheds, downslope_neighbo
     :return merged_indices_of_watersheds: List of arrays. Each array contains the indices of the watersheds that
     should be combined if doing spill point analysis.
 
-    mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
+    mapping_watershed_nodes = map_nodes_to_watersheds(watersheds, number_of_nodes)
     out_flow = mapping_watershed_nodes[downslope_neighbors]
     in_flow = mapping_watershed_nodes[in_flow_indices]
     new_watershed_number = np.ones(len(watersheds), dtype=int) * -1
@@ -441,7 +568,7 @@ def merge_indices_of_watersheds_graph(watersheds, number_of_nodes, in_flow_indic
     :return merged_indices: The indices of the watersheds that are connected.
     """
 
-    mapping_watershed_nodes = get_watershed_array(watersheds, number_of_nodes)
+    mapping_watershed_nodes = map_nodes_to_watersheds(watersheds, number_of_nodes)
     in_flow = mapping_watershed_nodes[in_flow_indices]
     out_flow = mapping_watershed_nodes[out_flow_indices]
 
