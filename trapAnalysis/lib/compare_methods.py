@@ -64,3 +64,22 @@ def compare_two_lists_of_arrays(l1, l2):
                 return False
 
     return True
+
+
+def compare_two_lists_of_tuples(l1, l2):
+    """
+    Two lists with tuples as elements. The two lists must contain the same tuples in the same ordering.
+    :param l1: List of tuples 1.
+    :param l2: List of tuples 2.
+    :return: True if the lists are equal, False if not.
+    """
+
+    if len(l1) != len(l2):  # Test if the length of the lists are equal
+        return False
+    else:
+        for i in range(len(l1)):  # The arrays must have the same ordering
+            tuples_are_equal = (l1[i] == l2[i])
+            if not tuples_are_equal:
+                return False
+
+    return True

@@ -146,3 +146,47 @@ def test_compare_two_lists_of_arrays_five():
     are_equal = compare_methods.compare_two_lists_of_arrays(l1, l2)
 
     assert are_equal
+
+
+def test_compare_two_lists_of_tuples_one():
+    # The lists have different lengths
+
+    l1 = [(1, 2), (3, 4)]
+    l2 = [(1, 2)]
+
+    are_equal = compare_methods.compare_two_lists_of_tuples(l1, l2)
+
+    assert are_equal is False
+
+
+def test_compare_two_lists_of_tuples_two():
+    # The lists have different tuples
+
+    l1 = [(1, 2), (3, 4)]
+    l2 = [(1, 2), (4, 3)]
+
+    are_equal = compare_methods.compare_two_lists_of_tuples(l1, l2)
+
+    assert are_equal is False
+
+
+def test_compare_two_lists_of_tuples_three():
+    # The tuples are in different orders
+
+    l1 = [(1, 2), (3, 4)]
+    l2 = [(3, 4), (1, 2)]
+
+    are_equal = compare_methods.compare_two_lists_of_tuples(l1, l2)
+
+    assert are_equal is False
+
+
+def test_compare_two_lists_of_tuples_four():
+    # The lists are equal
+
+    l1 = [(1, 2), (3, 4)]
+    l2 = [(1, 2), (3, 4)]
+
+    are_equal = compare_methods.compare_two_lists_of_tuples(l1, l2)
+
+    assert are_equal
