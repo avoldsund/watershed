@@ -115,7 +115,7 @@ def get_neighbors_for_interior_indices(indices, num_of_cols):
 
     nr_of_nodes = len(indices)
     neighbors = np.empty((nr_of_nodes, 8), dtype=int)
-    one_array = np.ones(nr_of_nodes)
+    one_array = np.ones(nr_of_nodes, dtype=int)
     n_array = one_array * num_of_cols
 
     neighbors[:, 0] = indices - n_array - one_array
@@ -175,15 +175,15 @@ def get_neighbors_for_indices_array(indices, num_of_cols, num_of_rows):
     :return nbrs: The 2d-array with the neighbors for all the indices
     """
 
-    # Figure out which are boundary and which are interior
-    are_boundary = np.where(are_boundary_nodes_bool(indices, num_of_cols, num_of_rows) == True)[0]
-    are_interior = np.where(are_boundary_nodes_bool(indices, num_of_cols, num_of_rows) == False)[0]
+    are_boundary = are_boundary_nodes_bool(indices, num_of_cols, num_of_rows)
+    boundary = indices[are_boundary]
+    interior = indices[are_boundary == False]
 
-    nbrs_interior = get_neighbors_for_interior_indices(indices[are_interior], num_of_cols)
-    nbrs_boundary = get_padded_neighbors(indices[are_boundary], num_of_cols, num_of_rows)
+    nbrs_interior = get_neighbors_for_interior_indices(interior, num_of_cols)
+    nbrs_boundary = get_padded_neighbors(boundary, num_of_cols, num_of_rows)
 
-    nbrs = np.concatenate((np.column_stack((indices[are_interior], nbrs_interior)),
-                           np.column_stack((indices[are_boundary], nbrs_boundary))))
+    nbrs = np.concatenate((np.column_stack((interior, nbrs_interior)),
+                           np.column_stack((boundary, nbrs_boundary))))
     nbrs = nbrs[np.argsort(nbrs[:, 0])][:, 1:]  # Remove the column used for sorting
 
     return nbrs
@@ -302,7 +302,7 @@ def get_neighbors_derivatives_dictionary(heights, nx, ny):
     :param heights: Heights of all nodes in the grid.
     :param nx: Number of columns.
     :param ny: Number of rows.
-    :return dict:
+    :return neighbors_derivatives_dict: A dictionary with key as index, value as (neighbors, derivatives)
     """
 
     neighbors_derivatives_dict = {}
