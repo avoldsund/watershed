@@ -283,39 +283,6 @@ def test_get_boundary_nodes_in_watersheds_advanced():
     assert are_equal
 
 
-def test_get_spill_points():
-
-    watersheds = [np.array([3, 4, 5, 10, 11]),
-                  np.array([0, 1, 2, 6, 7, 8, 12, 13, 14, 18, 19, 20, 24, 25, 26]),
-                  np.array([9, 15, 16, 17, 21, 22, 23, 27, 28, 29])]
-    heights = np.array([5, 7, 8, 7, 6, 0, 7, 2, 10, 10, 7, 6, 7, 2, 4, 5, 5, 4, 7, 7, 3.9, 4, 0, 0, 6, 5, 4, 4, 0, 0])
-    boundary_nodes = [np.array([3, 4, 5, 10, 11]),
-                      np.array([0, 1, 2, 6, 8, 12, 14, 18, 20, 24, 25, 26]),
-                      np.array([9, 15, 16, 17, 21, 23, 27, 28, 29])]
-
-    result_spill_points = np.array([5, 20, 23])
-
-    spill_points = trap_analysis.get_spill_points(boundary_nodes, heights)
-
-    assert np.array_equal(spill_points, result_spill_points)
-
-
-def test_get_spill_points_ridge():
-
-    watersheds = [np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 20, 21]),
-                  np.array([12, 13, 14, 17, 18, 19, 22, 23, 24])]
-    heights = np.array([0, 0, 0, 0, 0, 0, 250, 250, 250, 250, 0, 250, 500, 500, 500, 0,
-                        250, 500, 50, 50, 0, 250, 300, 50, 0])
-    boundary_nodes = [np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 20, 21]),
-                      np.array([12, 13, 14, 17, 19, 22, 23, 24])]
-
-    result_spill_points = np.array([0, 24])
-
-    spill_points = trap_analysis.get_spill_points(boundary_nodes, heights)
-
-    assert np.array_equal(spill_points, result_spill_points)
-
-
 def test_map_nodes_to_watersheds():
 
     number_of_nodes = 30
@@ -460,7 +427,74 @@ def test_get_lowest_height_on_landscape_boundary_for_watershed_no_landscape_boun
 
     assert lowest_height == result_lowest_height
 
+"""
+def test_get_lowest_landscape_boundary_for_watersheds():
 
+    nx = 9
+    ny = 9
+    heights = np.array([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 3, 4, 5, 8, 9, 9, 9, 10,
+                        10, 4, 1, 6, 8, 7, 7, 7, 10, 10, 6, 6, 6, 8, 5, 5, 5, 10,
+                        10, 8, 8, 8, 8, 4, 2, 4, 10, 10, 9, 9, 9, 9, 3, 3, 3, 10,
+                        10, 6, 1, 1, 1, 5, 5, 5, 10, 10, 6, 1, 0, 1, 6, 6, 6, 10,
+                        10, 10, 10, 10, 10, 10, 10, 10, 10])
+    watersheds = [np.array([79, 41, 42, 43, 69, 51, 52, 53, 71, 70, 60, 61, 62, 78, 44, 40, 34,
+                            6, 7, 8, 14, 15, 16, 35, 23, 24, 25, 17, 80, 33, 32, 31, 26]),
+                  np.array([0, 36, 39, 30, 29, 28, 27, 22, 21, 20, 37, 18, 13, 19, 38,
+                            1,  2, 11, 10, 9, 3,  4, 12, 5]),
+                  np.array([77, 76, 75, 74, 73, 72, 68, 67, 50, 49, 64, 63, 45, 46,
+                            47, 59, 58, 57, 56, 55, 54, 48, 65, 66])]
+    watershed = np.array([79, 41, 42, 43, 69, 51, 52, 53, 71, 70, 60, 61, 62, 78, 44, 40, 34,
+                          6, 7, 8, 14, 15, 16, 35, 23, 24, 25, 17, 80, 33, 32, 31, 26])
+    result_lowest_heights = np.array([10, 10, 10])
+
+    lowest_heights = trap_analysis.get_lowest_landscape_boundary_for_watersheds(watersheds, heights, nx, ny)
+
+    assert lowest_heights == result_lowest_heights
+"""
+
+
+def test_get_lowest_landscape_boundary_for_watersheds():
+    # Note: This is not a realistic example. The heights used in the test would not have resulted in these watersheds.
+
+    nx = 4
+    ny = 4
+    watersheds = [np.array([0, 4, 8, 12, 13, 14, 15]),
+                  np.array([1, 2]),
+                  np.array([3, 7, 11]),
+                  np.array([5, 6]),
+                  np.array([9, 10])]
+    heights = np.array([0, 2, 3, 4, 4, 3, 2, 1, 5, 6, 7, 8, 8, 7, 6, 5])
+
+    result_lowest_landscape_boundary = np.array([0, 2, 1, -1, -1])
+
+    lowest_landscape_boundary = trap_analysis.get_lowest_landscape_boundary_for_watersheds(watersheds, heights, nx, ny)
+    are_equal = np.array_equal(lowest_landscape_boundary, result_lowest_landscape_boundary)
+
+    assert are_equal
+
+
+def test_get_lowest_landscape_boundary_for_watersheds_unordered():
+    # Note: This is not a realistic example. The heights used in the test would not have resulted in these watersheds.
+    # The ordering of the watershed is different here
+
+    nx = 4
+    ny = 4
+    watersheds = [np.array([5, 6]),
+                  np.array([3, 7, 11]),
+                  np.array([9, 10]),
+                  np.array([0, 4, 8, 12, 13, 14, 15]),
+                  np.array([1, 2])]
+    heights = np.array([0, 2, 3, 4, 4, 3, 2, 1, 5, 6, 7, 8, 8, 7, 6, 5])
+
+    result_lowest_landscape_boundary = np.array([-1, 1, -1, 0, 2])
+
+    lowest_landscape_boundary = trap_analysis.get_lowest_landscape_boundary_for_watersheds(watersheds, heights, nx, ny)
+    are_equal = np.array_equal(lowest_landscape_boundary, result_lowest_landscape_boundary)
+
+    assert are_equal
+
+
+"""
 def test_get_downslope_neighbors_for_spill_points():
 
     nx = 6
@@ -477,7 +511,7 @@ def test_get_downslope_neighbors_for_spill_points():
             spill_points, heights, watersheds, nx, ny)
 
     assert np.array_equal(downslope_neighbors, result_downslope_neighbors)
-
+"""
 
 """
 def test_get_downslope_neighbors_for_spill_points_advanced():
@@ -503,7 +537,7 @@ def test_get_downslope_neighbors_for_spill_points_advanced():
     assert np.array_equal(out_flow, result_out_flow)
 """
 
-
+"""
 def test_merge_watersheds_using_merged_indices():
 
     watersheds = [np.array([0, 1, 2, 3, 4, 5, 8, 16, 24, 32, 40, 41, 42]),
@@ -747,7 +781,7 @@ def test_merge_indices_of_watersheds_graph_valley():
 
     assert are_equal
 
-"""
+
 def test_do_spill_point_analysis():
 
     #heights = np.array([np.array([10, 10, 10, 10, 10, 10, 10, 10, 10]),
