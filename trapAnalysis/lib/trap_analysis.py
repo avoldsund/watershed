@@ -1,4 +1,5 @@
 import sys
+
 path = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/'
 sys.path.insert(0, path + 'util')
 sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
@@ -7,15 +8,14 @@ import util
 import networkx
 import cPickle
 import math
+
 saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
 import time
 import matplotlib.pyplot as plt
 
 
 class Landscape:
-
     def __init__(self, ds):
-
         geo_transform = ds.GetGeoTransform()
         self.num_of_nodes_x = ds.RasterXSize
         self.num_of_nodes_y = ds.RasterYSize
@@ -225,8 +225,8 @@ def get_minimums_in_watersheds(minimum_indices, num_of_cols, num_of_rows):
         graph.add_edges_from(edges)
 
     minimums_in_watershed = networkx.connected_components(graph)
-    #networkx.draw(graph)
-    #plt.show()
+    # networkx.draw(graph)
+    # plt.show()
 
     return minimums_in_watershed
 
@@ -286,24 +286,15 @@ def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
     boundary_nodes = []
 
     for watershed in watersheds:
+        watershed = np.sort(watershed)
         neighbors_for_watershed = util.get_neighbors_for_indices_array(watershed, num_of_cols, num_of_rows)
         neighbors_for_watershed_1d = np.concatenate(neighbors_for_watershed)
-        not_in_watershed = np.in1d(neighbors_for_watershed_1d, watershed, invert=True)
+        not_in_watershed_arr = np.in1d(neighbors_for_watershed_1d, watershed, invert=True)
+        not_in_watershed = np.split(not_in_watershed_arr, len(watershed))
 
-        split_neighbors = np.split(neighbors_for_watershed_1d, len(watershed))
-        split_boolean = np.split(not_in_watershed, len(watershed))
-
-        watershed = np.sort(watershed)
-
-        split_neighbors = [np.asarray([i for i in split if i != -1]) for split in split_neighbors]
-        len_splits = [len(i) for i in split_neighbors]
-        split_boolean = [split_boolean[i][:len_splits[i]] for i in range(len(split_boolean))]
-        foreign_neighbors = [split_neighbors[i][split_boolean[i]] for i in range(len(split_neighbors))]
-        boundary_indices = np.asarray([watershed[i] for i in range(len(foreign_neighbors))
-                                       if len(foreign_neighbors[i]) != 0])
-        landscape_boundary_nodes = util.are_boundary_nodes_bool(watershed, num_of_cols, num_of_rows)
-        whole_boundary = np.unique(np.concatenate((boundary_indices, watershed[landscape_boundary_nodes])))
-        boundary_nodes.append(whole_boundary)
+        bnd_nodes = np.asarray([watershed[i] for i in range(len(neighbors_for_watershed))
+                                if len(neighbors_for_watershed[i][not_in_watershed[i]]) != 0])
+        boundary_nodes.append(bnd_nodes)
 
     return boundary_nodes
 
@@ -414,8 +405,22 @@ def get_lowest_landscape_boundary_for_watersheds(watersheds, heights, nx, ny):
     return lowest_landscape_boundary_for_ws
 
 
-def get_min_of_max_of_boundary_pairs(watershed, external_dict, boundary_pairs, heights, nx, ny):
+def get_all_boundary_pairs_for_watersheds(watersheds, boundary_nodes, nx, ny):
 
+    for i in range(10):
+        print i
+        start = time.time()
+        boundary_nbrs = util.get_neighbors_for_indices_array(boundary_nodes[i], nx, ny)
+        end = time.time()
+        print end-start
+        # print boundary_nbrs
+        foreign_nbrs = [np.setdiff1d(node_nbrs, watersheds[i]) for node_nbrs in boundary_nbrs]
+        # print foreign_nbrs
+
+    return 0
+
+
+def get_min_of_max_of_boundary_pairs(watershed, external_dict, boundary_pairs, heights, nx, ny):
     max_of_boundary_pair = []
 
     for i in range(len(boundary_pairs)):
@@ -431,7 +436,6 @@ def get_min_of_max_of_boundary_pairs(watershed, external_dict, boundary_pairs, h
 
 
 def merge_watersheds_using_boundary_pairs(watersheds, heights, nbrs_der_dict, nx, ny):
-
     ws_graph = networkx.Graph()
     ws_graph.add_nodes_from(np.arange(0, len(watersheds), 1))
 
@@ -505,7 +509,6 @@ def get_downslope_neighbors_for_spill_points(spill_points, heights, watersheds, 
 
 
 def merge_watersheds_using_merged_indices(watersheds, merged_watersheds):
-
     nodes_in_watersheds = []
 
     for i in range(len(merged_watersheds)):
@@ -513,5 +516,3 @@ def merge_watersheds_using_merged_indices(watersheds, merged_watersheds):
         nodes_in_watersheds.append(merged_ws)
 
     return nodes_in_watersheds
-
-

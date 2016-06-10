@@ -278,6 +278,7 @@ def test_get_boundary_nodes_in_watersheds_advanced():
     for i in range(len(boundary_nodes)):
         boundary_nodes[i] = np.sort(boundary_nodes[i])
 
+    print boundary_nodes
     are_equal = compare_methods.compare_two_lists_of_arrays(boundary_nodes, result_boundary_nodes)
 
     assert are_equal
@@ -354,6 +355,28 @@ def test_get_all_boundary_pairs_for_watershed():
 
     assert are_equal
 
+"""
+def test_get_all_boundary_pairs_for_watersheds():
+
+    nx = 7
+    ny = 7
+    watersheds = [np.array([0, 1, 2, 7, 8, 9, 14, 15, 16, 21, 22]),
+                  np.array([3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
+                            32, 33, 34, 39, 40, 41, 46, 47, 48]),
+                  np.array([28, 29, 30, 31, 35, 36, 37, 38, 42, 43, 44, 45])]
+    #boundary_nodes = [np.array([0, 1, 2, 7, 9, 14, 15, 16, 21, 22]),
+    #                  np.array([3, 4, 5, 6, 10, 13, 17, 20, 23, 24, 25, 27, 32, 34, 39, 41, 46, 47, 48])]
+    result_boundary_pairs = [(2, 3)]
+
+    boundary_pairs = trap_analysis.get_all_boundary_pairs_for_watersheds(watersheds, boundary_nodes, nx, ny)
+
+    result_boundary_pairs.sort()
+    boundary_pairs.sort()
+
+    are_equal = compare_methods.compare_two_lists_of_tuples(boundary_pairs, result_boundary_pairs)
+
+    assert are_equal
+"""
 
 def test_get_min_of_max_of_boundary_pairs():
 
