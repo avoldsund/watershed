@@ -299,6 +299,41 @@ def get_boundary_nodes_in_watersheds(watersheds, num_of_cols, num_of_rows):
     return boundary_nodes
 
 
+def get_boundary_pairs_in_watersheds(watersheds, num_of_cols, num_of_rows):
+    """
+    Returns a list of arrays, where each array holds all boundary pairs for a watershed.
+    :param watersheds: All watersheds.
+    :param num_of_cols: Number of nodes in the x-direction.
+    :param num_of_rows: Number of nodes in the y-direction.
+    :return boundary_pairs: All boundary pairs in the landscape.
+    """
+
+    boundary_pairs = []  # List of arrays where the arrays have tuples
+
+    for watershed in watersheds:
+        watershed = np.sort(watershed)
+        neighbors_for_watershed = util.get_neighbors_for_indices_array(watershed, num_of_cols, num_of_rows)
+        neighbors_for_watershed_1d = np.concatenate(neighbors_for_watershed)
+        not_in_watershed_arr = np.in1d(neighbors_for_watershed_1d, watershed, invert=True)
+        not_in_watershed = np.split(not_in_watershed_arr, len(watershed))
+
+        ext_nbrs = [(watershed[i], neighbors_for_watershed[i][not_in_watershed[i]]
+                    [neighbors_for_watershed[i][not_in_watershed[i]] != -1])
+                    for i in range(len(neighbors_for_watershed))
+                    if len(neighbors_for_watershed[i][not_in_watershed[i]]
+                    [neighbors_for_watershed[i][not_in_watershed[i]] != -1]) > 0]
+        ext_bordering_nodes = [el[1] for el in ext_nbrs]
+        repeat_nr = np.array([len(el[1]) for el in ext_nbrs])
+        bordering_nodes = np.array([el[0] for el in ext_nbrs])
+        nr_of_pairs = np.sum(repeat_nr)
+        pair_arr = np.empty((2, nr_of_pairs), dtype=int)
+        pair_arr[0, :] = np.repeat(bordering_nodes, repeat_nr)
+        pair_arr[1, :] = np.concatenate(ext_bordering_nodes)
+        boundary_pairs.append(pair_arr)
+
+    return boundary_pairs
+
+
 def map_nodes_to_watersheds(watersheds, number_of_nodes):
     """
     Returns the watershed index for every node.
@@ -403,21 +438,6 @@ def get_lowest_landscape_boundary_for_watersheds(watersheds, heights, nx, ny):
     lowest_landscape_boundary_for_ws[indices_of_ws_with_boundary] = min_of_boundary_on_watersheds
 
     return lowest_landscape_boundary_for_ws
-
-
-def get_all_boundary_pairs_for_watersheds(watersheds, boundary_nodes, nx, ny):
-
-    for i in range(10):
-        print i
-        start = time.time()
-        boundary_nbrs = util.get_neighbors_for_indices_array(boundary_nodes[i], nx, ny)
-        end = time.time()
-        print end-start
-        # print boundary_nbrs
-        foreign_nbrs = [np.setdiff1d(node_nbrs, watersheds[i]) for node_nbrs in boundary_nbrs]
-        # print foreign_nbrs
-
-    return 0
 
 
 def get_min_of_max_of_boundary_pairs(watershed, external_dict, boundary_pairs, heights, nx, ny):

@@ -284,6 +284,49 @@ def test_get_boundary_nodes_in_watersheds_advanced():
     assert are_equal
 
 
+def test_get_boundary_pairs_in_watersheds():
+
+    nx = 7
+    ny = 7
+    watersheds = [np.array([0, 1, 2, 7, 8, 9, 14, 15, 16, 21, 22]),
+                  np.array([3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
+                            32, 33, 34, 39, 40, 41, 46, 47, 48]),
+                  np.array([28, 29, 30, 31, 35, 36, 37, 38, 42, 43, 44, 45])]
+    result_boundary_pairs = [np.array([np.array([2, 2, 9, 9, 9, 15, 16, 16, 16, 16, 21, 21, 22, 22, 22, 22]),
+                                      np.array([3, 10, 3, 10, 17, 23, 10, 17, 23, 24, 28, 29, 23, 28, 29, 30])]),
+                             np.array([np.array([3, 3, 10, 10, 10, 17, 17, 23, 23, 23, 23, 23, 23, 24, 24, 24, 25, 32, 32, 39, 39, 39, 46, 46]),
+                                      np.array([2, 9, 2, 9, 16, 9, 16, 15, 16, 22, 29, 30, 31, 16, 30, 31, 31, 31, 38, 31, 38, 45, 38, 45])]),
+                             np.array([np.array([28, 28, 29, 29, 29, 30, 30, 30, 31, 31, 31, 31, 31, 38, 38, 38, 45, 45]),
+                                      np.array([21, 22, 21, 22, 23, 22, 23, 24, 23, 24, 25, 32, 39, 32, 39, 46, 39, 46])])]
+
+    boundary_pairs = trap_analysis.get_boundary_pairs_in_watersheds(watersheds, nx, ny)
+    are_equal = compare_methods.compare_two_lists_of_arrays(boundary_pairs, result_boundary_pairs)
+
+    assert are_equal
+
+
+def test_get_boundary_pairs_in_watersheds_different_order():
+    # Different order of the watersheds and the elements in the watersheds
+
+    nx = 7
+    ny = 7
+    watersheds = [np.array([6, 5, 4, 3, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
+                            32, 33, 34, 39, 40, 41, 46, 47, 48]),
+                  np.array([0, 1, 2, 7, 8, 9, 14, 15, 16, 21, 22]),
+                  np.array([28, 29, 30, 31, 35, 36, 37, 38, 42, 43, 44, 45])]
+    result_boundary_pairs = [np.array([np.array([3, 3, 10, 10, 10, 17, 17, 23, 23, 23, 23, 23, 23, 24, 24, 24, 25, 32, 32, 39, 39, 39, 46, 46]),
+                                      np.array([2, 9, 2, 9, 16, 9, 16, 15, 16, 22, 29, 30, 31, 16, 30, 31, 31, 31, 38, 31, 38, 45, 38, 45])]),
+                             np.array([np.array([2, 2, 9, 9, 9, 15, 16, 16, 16, 16, 21, 21, 22, 22, 22, 22]),
+                                      np.array([3, 10, 3, 10, 17, 23, 10, 17, 23, 24, 28, 29, 23, 28, 29, 30])]),
+                             np.array([np.array([28, 28, 29, 29, 29, 30, 30, 30, 31, 31, 31, 31, 31, 38, 38, 38, 45, 45]),
+                                      np.array([21, 22, 21, 22, 23, 22, 23, 24, 23, 24, 25, 32, 39, 32, 39, 46, 39, 46])])]
+
+    boundary_pairs = trap_analysis.get_boundary_pairs_in_watersheds(watersheds, nx, ny)
+    are_equal = compare_methods.compare_two_lists_of_arrays(boundary_pairs, result_boundary_pairs)
+
+    assert are_equal
+
+
 def test_map_nodes_to_watersheds():
 
     number_of_nodes = 30
