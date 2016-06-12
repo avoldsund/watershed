@@ -334,6 +334,62 @@ def get_boundary_pairs_in_watersheds(watersheds, num_of_cols, num_of_rows):
     return boundary_pairs
 
 
+def get_min_height_of_max_of_all_pairs(boundary_pairs, heights):
+    """
+    Returns an array with the minimum height of the maximum value of all boundary pairs, essentially some kind of spill
+    point.
+    :param boundary_pairs: All boundary pairs for each watershed.
+    :param heights: The heights of all nodes in the landscape.
+    :return min_of_max_in_each_watershed: An array holding the spill point heights for each watershed.
+    """
+
+    max_heights_of_pairs = [np.max(heights[arr], axis=0) for arr in boundary_pairs]
+    min_of_max_in_each_watershed = [np.min(arr) for arr in max_heights_of_pairs]
+
+    return min_of_max_in_each_watershed
+
+
+def get_spill_pair_indices(max_heights_of_pairs, min_of_max_in_each_watershed):
+    """
+    Returns a list of arrays where each array represents the indices of each pair that can be the spill point.
+    :param max_heights_of_pairs: The max value of the pair.
+    :param min_of_max_in_each_watershed: The minimum value of the max heights of pairs
+    :return spill_pair_indices: The indices of the pairs which can be spill points.
+    """
+
+    spill_pair_indices = [np.nonzero(max_heights_of_pairs[i] == min_of_max_in_each_watershed[i])[0] for
+                          i in range(len(min_of_max_in_each_watershed))]
+
+    return spill_pair_indices
+
+
+def get_steepest_spill_pair(boundary_pairs, spill_pairs):
+
+    steepest_pairs = [boundary_pairs[i][:, spill_pairs[i][0]] for i in range(len(spill_pairs))]
+
+    return steepest_pairs
+
+
+def merge_watersheds_based_on_steepest_pairs(steepest_pairs, watersheds, nx, ny):
+
+    ws_graph = networkx.Graph()
+    ws_graph.add_nodes_from(np.arange(0, len(watersheds), 1))
+
+    map_node_to_watersheds = map_nodes_to_watersheds(watersheds, nx * ny)
+
+    for i in range(len(steepest_pairs)):
+        from_node = steepest_pairs[i][0]
+        to_node = steepest_pairs[i][1]
+        #from_ws = map_node_to_watersheds[from_node]
+        to_ws = map_node_to_watersheds[to_node]
+        ws_graph.add_edge(i, to_ws)
+
+    merged_indices = sorted(networkx.connected_components(ws_graph))
+    merged_indices = [np.array(list(el)) for el in merged_indices]
+
+    return merged_indices
+
+
 def map_nodes_to_watersheds(watersheds, number_of_nodes):
     """
     Returns the watershed index for every node.

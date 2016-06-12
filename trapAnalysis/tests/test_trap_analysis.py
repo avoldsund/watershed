@@ -327,6 +327,90 @@ def test_get_boundary_pairs_in_watersheds_different_order():
     assert are_equal
 
 
+def test_get_min_height_of_max_of_all_pairs():
+
+    heights = np.array([10, 10, 10, 10, 10, 10, 10, 10, 1, 8, 7, 7, 7, 10, 10, 6, 8, 5, 5, 5, 10,
+                        10, 8, 8, 4, 2, 4, 10, 10, 9, 9, 3, 3, 3, 10, 10, 0, 1, 5, 5, 5, 10, 10,
+                        10, 10, 10, 10, 10, 10])
+    watersheds = [np.array([0, 1, 2, 7, 8, 9, 14, 15, 16, 21, 22]),
+                  np.array([3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
+                            32, 33, 34, 39, 40, 41, 46, 47, 48]),
+                  np.array([28, 29, 30, 31, 35, 36, 37, 38, 42, 43, 44, 45])]
+    boundary_pairs = [np.array([np.array([2, 2, 9, 9, 9, 15, 16, 16, 16, 16, 21, 21, 22, 22, 22, 22]),
+                                np.array([3, 10, 3, 10, 17, 23, 10, 17, 23, 24, 28, 29, 23, 28, 29, 30])]),
+                      np.array([np.array([3, 3, 10, 10, 10, 17, 17, 23, 23, 23, 23, 23, 23, 24, 24, 24, 25, 32, 32, 39, 39, 39, 46, 46]),
+                                np.array([2, 9, 2, 9, 16, 9, 16, 15, 16, 22, 29, 30, 31, 16, 30, 31, 31, 31, 38, 31, 38, 45, 38, 45])]),
+                      np.array([np.array([28, 28, 29, 29, 29, 30, 30, 30, 31, 31, 31, 31, 31, 38, 38, 38, 45, 45]),
+                                np.array([21, 22, 21, 22, 23, 22, 23, 24, 23, 24, 25, 32, 39, 32, 39, 46, 39, 46])])]
+    result_max_heights_of_pairs = np.array([np.array([10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 10, 10, 8, 10, 9, 9]),
+                                            np.array([10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 9, 9, 8, 8, 9, 4, 3, 3, 5, 5, 5, 10, 10, 10]),
+                                            np.array([10, 10, 10, 9, 9, 9, 9, 9, 8, 4, 3, 3, 5, 5, 5, 10, 10, 10])])
+
+    result_min_of_max = np.array([8, 3, 3])
+    min_of_max = trap_analysis.get_min_height_of_max_of_all_pairs(boundary_pairs, heights)
+
+    are_equal = compare_methods.compare_two_lists_of_arrays(min_of_max, result_min_of_max)
+
+    assert are_equal
+
+
+def test_get_spill_pair_indices():
+
+    max_heights_of_pairs = np.array([np.array([10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 10, 10, 8, 10, 9, 9]),
+                                     np.array([10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 9, 9, 8, 8, 9, 4, 3, 3, 5, 5, 5, 10, 10, 10]),
+                                     np.array([10, 10, 10, 9, 9, 9, 9, 9, 8, 4, 3, 3, 5, 5, 5, 10, 10, 10])])
+    boundary_pairs = [np.array([np.array([2, 2, 9, 9, 9, 15, 16, 16, 16, 16, 21, 21, 22, 22, 22, 22]),
+                                np.array([3, 10, 3, 10, 17, 23, 10, 17, 23, 24, 28, 29, 23, 28, 29, 30])]),
+                      np.array([np.array([3, 3, 10, 10, 10, 17, 17, 23, 23, 23, 23, 23, 23, 24, 24, 24, 25, 32, 32, 39, 39, 39, 46, 46]),
+                                np.array([2, 9, 2, 9, 16, 9, 16, 15, 16, 22, 29, 30, 31, 16, 30, 31, 31, 31, 38, 31, 38, 45, 38, 45])]),
+                      np.array([np.array([28, 28, 29, 29, 29, 30, 30, 30, 31, 31, 31, 31, 31, 38, 38, 38, 45, 45]),
+                                np.array([21, 22, 21, 22, 23, 22, 23, 24, 23, 24, 25, 32, 39, 32, 39, 46, 39, 46])])]
+    min_of_max = np.array([8, 3, 3])
+    result_spill_pair_indices = [np.array([3, 4, 5, 6, 7, 8, 9, 12]), np.array([16, 17]), np.array([10, 11])]
+
+    spill_pair_indices = trap_analysis.get_spill_pair_indices(max_heights_of_pairs, min_of_max)
+
+    are_equal = compare_methods.compare_two_lists_of_arrays(spill_pair_indices, result_spill_pair_indices)
+
+    assert are_equal
+
+
+def test_get_steepest_spill_pair():
+
+    boundary_pairs = [np.array([np.array([2, 2, 9, 9, 9, 15, 16, 16, 16, 16, 21, 21, 22, 22, 22, 22]),
+                                np.array([3, 10, 3, 10, 17, 23, 10, 17, 23, 24, 28, 29, 23, 28, 29, 30])]),
+                      np.array([np.array([3, 3, 10, 10, 10, 17, 17, 23, 23, 23, 23, 23, 23, 24, 24, 24, 25, 32, 32, 39, 39, 39, 46, 46]),
+                                np.array([2, 9, 2, 9, 16, 9, 16, 15, 16, 22, 29, 30, 31, 16, 30, 31, 31, 31, 38, 31, 38, 45, 38, 45])]),
+                      np.array([np.array([28, 28, 29, 29, 29, 30, 30, 30, 31, 31, 31, 31, 31, 38, 38, 38, 45, 45]),
+                                np.array([21, 22, 21, 22, 23, 22, 23, 24, 23, 24, 25, 32, 39, 32, 39, 46, 39, 46])])]
+    spill_pair_indices = [np.array([3, 4, 5, 6, 7, 8, 9, 12]), np.array([16, 17]), np.array([10, 11])]
+    result_steepst_pairs = [np.array([9, 10]), np.array([25, 31]), np.array([31, 25])]
+
+    steepest_pairs = trap_analysis.get_steepest_spill_pair(boundary_pairs, spill_pair_indices)
+
+    are_equal = compare_methods.compare_two_lists_of_arrays(steepest_pairs, result_steepst_pairs)
+
+    assert are_equal
+
+
+def test_merge_watersheds_based_on_steepest_pairs():
+
+    nx = 7
+    ny = 7
+    watersheds = [np.array([0, 1, 2, 7, 8, 9, 14, 15, 16, 21, 22]),
+                  np.array([3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
+                            32, 33, 34, 39, 40, 41, 46, 47, 48]),
+                  np.array([28, 29, 30, 31, 35, 36, 37, 38, 42, 43, 44, 45])]
+    steepest_pairs = [np.array([9, 10]), np.array([25, 31]), np.array([31, 25])]
+    result_merged_watersheds = [np.array([0, 1, 2])]
+
+    merged_watersheds = trap_analysis.merge_watersheds_based_on_steepest_pairs(steepest_pairs, watersheds, nx, ny)
+
+    are_equal = compare_methods.compare_two_lists_of_arrays(merged_watersheds, result_merged_watersheds)
+
+    assert are_equal
+
+
 def test_map_nodes_to_watersheds():
 
     number_of_nodes = 30
@@ -398,28 +482,6 @@ def test_get_all_boundary_pairs_for_watershed():
 
     assert are_equal
 
-"""
-def test_get_all_boundary_pairs_for_watersheds():
-
-    nx = 7
-    ny = 7
-    watersheds = [np.array([0, 1, 2, 7, 8, 9, 14, 15, 16, 21, 22]),
-                  np.array([3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
-                            32, 33, 34, 39, 40, 41, 46, 47, 48]),
-                  np.array([28, 29, 30, 31, 35, 36, 37, 38, 42, 43, 44, 45])]
-    #boundary_nodes = [np.array([0, 1, 2, 7, 9, 14, 15, 16, 21, 22]),
-    #                  np.array([3, 4, 5, 6, 10, 13, 17, 20, 23, 24, 25, 27, 32, 34, 39, 41, 46, 47, 48])]
-    result_boundary_pairs = [(2, 3)]
-
-    boundary_pairs = trap_analysis.get_all_boundary_pairs_for_watersheds(watersheds, boundary_nodes, nx, ny)
-
-    result_boundary_pairs.sort()
-    boundary_pairs.sort()
-
-    are_equal = compare_methods.compare_two_lists_of_tuples(boundary_pairs, result_boundary_pairs)
-
-    assert are_equal
-"""
 
 def test_get_min_of_max_of_boundary_pairs():
 
