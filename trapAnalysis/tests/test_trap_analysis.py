@@ -310,7 +310,7 @@ def test_get_min_height_of_max_of_all_pairs():
     assert are_equal
 
 
-def test_get_spill_pair_indices():
+def test_get_spill_pairs():
 
     max_heights_of_pairs = np.array([np.array([10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 10, 10, 8, 10, 9, 9]),
                                      np.array([10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 9, 9, 8, 8, 9, 4, 3, 3, 5, 5, 5, 10, 10, 10]),
@@ -322,11 +322,11 @@ def test_get_spill_pair_indices():
                       np.array([np.array([28, 28, 29, 29, 29, 30, 30, 30, 31, 31, 31, 31, 31, 38, 38, 38, 45, 45]),
                                 np.array([21, 22, 21, 22, 23, 22, 23, 24, 23, 24, 25, 32, 39, 32, 39, 46, 39, 46])])]
     min_of_max = np.array([8, 3, 3])
-    result_spill_pair_indices = [np.array([3, 4, 5, 6, 7, 8, 9, 12]), np.array([16, 17]), np.array([10, 11])]
+    result_spill_pairs = [np.array([3, 4, 5, 6, 7, 8, 9, 12]), np.array([16, 17]), np.array([10, 11])]
 
-    spill_pair_indices = trap_analysis.get_spill_pair_indices(max_heights_of_pairs, min_of_max)
+    spill_pairs = trap_analysis.get_spill_pairs(max_heights_of_pairs, min_of_max)
 
-    are_equal = compare_methods.compare_two_lists_of_arrays(spill_pair_indices, result_spill_pair_indices)
+    are_equal = compare_methods.compare_two_lists_of_arrays(spill_pairs, result_spill_pairs)
 
     assert are_equal
 
@@ -483,16 +483,15 @@ def test_merge_sub_traps():
                         10, 8, 8, 4, 2, 4, 10, 10, 9, 9, 3, 3, 3, 10, 10, 0, 1, 5, 5, 5, 10, 9,
                         10, 10, 10, 10, 10, 10])
     result_merged_watersheds = [np.array([0, 1, 2, 7, 8, 9, 14, 15, 16, 21, 22]),
-                               np.array([3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
+                                np.array([3, 4, 5, 6, 10, 11, 12, 13, 17, 18, 19, 20, 23, 24, 25, 26, 27,
                                          32, 33, 34, 39, 40, 41, 46, 47, 48, 28, 29, 30, 31, 35, 36, 37,
                                          38, 42, 43, 44, 45])]
 
-    merged_watersheds = trap_analysis.merge_sub_traps(watersheds, heights, nx, ny)
+    merged_watersheds, nr_of_iterations = trap_analysis.merge_sub_traps(watersheds, heights, nx, ny)
 
     are_equal = compare_methods.compare_two_lists_of_arrays(merged_watersheds, result_merged_watersheds)
 
     assert are_equal
-
 
 
 def test_get_external_nbrs_dict_for_watershed():

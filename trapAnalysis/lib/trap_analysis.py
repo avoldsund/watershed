@@ -323,7 +323,7 @@ def get_boundary_pairs_in_watersheds(watersheds, num_of_cols, num_of_rows):
                     if len(neighbors_for_watershed[i][not_in_watershed[i]]
                     [neighbors_for_watershed[i][not_in_watershed[i]] != -1]) > 0]
         ext_bordering_nodes = [el[1] for el in ext_nbrs]
-        repeat_nr = np.array([len(el[1]) for el in ext_nbrs])
+        repeat_nr = np.array([len(el[1]) for el in ext_nbrs], dtype=int)
         bordering_nodes = np.array([el[0] for el in ext_nbrs])
         nr_of_pairs = np.sum(repeat_nr)
         pair_arr = np.empty((2, nr_of_pairs), dtype=int)
@@ -349,7 +349,7 @@ def get_min_height_of_max_of_all_pairs(boundary_pairs, heights):
     return min_of_max_in_each_watershed, max_heights_of_pairs
 
 
-def get_spill_pair_indices(max_heights_of_pairs, min_of_max_in_each_watershed):
+def get_spill_pairs(max_heights_of_pairs, min_of_max_in_each_watershed):
     """
     Returns a list of arrays where each array represents the indices of each pair that can be the spill point.
     :param max_heights_of_pairs: The max value of the pair.
@@ -357,10 +357,10 @@ def get_spill_pair_indices(max_heights_of_pairs, min_of_max_in_each_watershed):
     :return spill_pair_indices: The indices of the pairs which can be spill points.
     """
 
-    spill_pair_indices = [np.nonzero(max_heights_of_pairs[i] == min_of_max_in_each_watershed[i])[0] for
-                          i in range(len(min_of_max_in_each_watershed))]
+    spill_pairs = [np.nonzero(max_heights_of_pairs[i] == min_of_max_in_each_watershed[i])[0] for
+                   i in range(len(min_of_max_in_each_watershed))]
 
-    return spill_pair_indices
+    return spill_pairs
 
 
 def get_lowest_landscape_boundary_for_watersheds(watersheds, heights, nx, ny):
@@ -433,15 +433,24 @@ def merge_watersheds_using_merged_indices(watersheds, merged_watersheds):
 
 def merge_sub_traps(watersheds, heights, nx, ny):
 
-    boundary_pairs = get_boundary_pairs_in_watersheds(watersheds, nx, ny)
-    min_of_max_in_each_watershed, max_heights_of_pairs = get_min_height_of_max_of_all_pairs(boundary_pairs, heights)
-    spill_pairs = get_spill_pair_indices(max_heights_of_pairs, min_of_max_in_each_watershed)
-    steepest_spill_pairs = get_steepest_spill_pair(boundary_pairs, spill_pairs)
+    changes = True
+    iterations = 0
 
-    merged_ws_indices = merge_watersheds_based_on_steepest_pairs(steepest_spill_pairs, watersheds, heights, nx, ny)
-    new_watersheds = merge_watersheds_using_merged_indices(watersheds, merged_ws_indices)
+    while changes:
+        changes = False
+        boundary_pairs = get_boundary_pairs_in_watersheds(watersheds, nx, ny)
+        min_of_max_in_each_watershed, max_heights_of_pairs = get_min_height_of_max_of_all_pairs(boundary_pairs, heights)
+        spill_pairs = get_spill_pairs(max_heights_of_pairs, min_of_max_in_each_watershed)
+        steepest_spill_pairs = get_steepest_spill_pair(boundary_pairs, spill_pairs)
 
-    return new_watersheds
+        merged_ws_indices = merge_watersheds_based_on_steepest_pairs(steepest_spill_pairs, watersheds, heights, nx, ny)
+        new_watersheds = merge_watersheds_using_merged_indices(watersheds, merged_ws_indices)
+        if 1 < len(new_watersheds) < len(watersheds):
+            changes = True
+            watersheds = new_watersheds
+            iterations += 1
+
+    return watersheds, iterations
 
 
 def map_nodes_to_watersheds(watersheds, number_of_nodes):
