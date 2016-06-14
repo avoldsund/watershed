@@ -6,6 +6,20 @@ sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/util'
 import util
 import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import axes3d
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
+
+
+def get_cmap(N):
+    # http://stackoverflow.com/questions/14720331/how-to-generate-random-colors-in-matplotlib
+
+    color_norm = colors.Normalize(vmin=0, vmax=N-1)
+    scalar_map = cmx.ScalarMappable(norm=color_norm, cmap='hsv')
+
+    def map_index_to_rgb_color(index):
+        return scalar_map.to_rgba(index)
+
+    return map_index_to_rgb_color
 
 
 def plot_landscape_2d(landscape, ds):
@@ -89,19 +103,23 @@ def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
     color_list = ['red', 'green', 'blue', 'yellow']
     color_list = iter(color_list * (nr_of_large_watersheds/3))
 
+    cmap = get_cmap(len(large_watersheds))
     # Plotting all watersheds except the 10 largest
-    for i in range(nr_of_large_watersheds):
+    for i in range(nr_of_large_watersheds - 5):
         row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
         plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
                     landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
                     color=next(color_list), s=30, lw=0, alpha=0.7)
 
+    color_list = ['gold', 'darkgreen', 'darkorange', 'darkorchid', 'dodgerblue']
+    color_list = iter(color_list * (nr_of_large_watersheds/3))
+
     # Plot the 10 largest watersheds indigo colored
-    #for i in range(nr_of_large_watersheds-10, nr_of_large_watersheds):
-    #    row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
-    #    plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
-    #                landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
-    #                color='indigo', s=30, lw=0, alpha=0.7)
+    for i in range(nr_of_large_watersheds - 5, nr_of_large_watersheds):
+        row_col = util.get_row_and_col_from_indices(large_watersheds[i], landscape.num_of_nodes_x)
+        plt.scatter(landscape.x_min + row_col[0::ds, 1] * landscape.step_size,
+                    landscape.y_max - row_col[0::ds, 0] * landscape.step_size,
+                    color=next(color_list), s=30, lw=0, alpha=0.7)
 
     plt.rcParams.update({'font.size': 14})
     plt.title('All watersheds with over 100 nodes')
@@ -109,6 +127,13 @@ def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
     plt.ylabel('y')
 
     plt.show()
+
+
+
+
+
+
+
 
 
 def plot_watersheds_and_spill_points_2d(nodes_in_watersheds, in_flow, out_flow, landscape, ds):
@@ -450,6 +475,8 @@ def plot_landscape_3d_without_landscape_object(heights2d, xmin, xmax, ymin, ymax
     ax = fig.gca(projection='3d')
     surf = ax.plot_surface(X, Y, heights2d, rstride=1, cstride=1, cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)
+    cmap = plt.get_cmap('terrain')
+    fig.colorbar(surf)
     plt.show()
     # Plot (x, y, z) in 3D
     #fig, ax = plt.subplots(subplot_kw=dict(projection='3d'))
