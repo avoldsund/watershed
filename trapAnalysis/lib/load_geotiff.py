@@ -123,7 +123,7 @@ def get_landscape_tyrifjorden(file_name):
     return landscape
 
 
-def modify_landscape_tyrifjorden(landscape): # Specific changes _ONLY_ for Tyrifjorden, 1. col, last row NaN
+def modify_landscape_tyrifjorden(landscape):  # Specific changes _ONLY_ for Tyrifjorden, 1. col, last row NaN
     """
     Modification necessary for removing the first column and the last row
     :param landscape: The landscape object to be modified
