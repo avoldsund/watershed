@@ -48,23 +48,25 @@ landscape = load_geotiff.get_landscape_tyrifjorden(file_name)
 nodes_in_watersheds = cPickle.load(open(saved_files + 'nodesInWatershedsStandard.pkl', 'rb'))
 
 #start = time.time()
-#boundary_nodes = trap_analysis.get_boundary_nodes_in_watersheds(nodes_in_watersheds, landscape.num_of_nodes_x,
-#                                                                landscape.num_of_nodes_y)
+boundary_nodes = trap_analysis.get_boundary_nodes_in_watersheds(nodes_in_watersheds, landscape.num_of_nodes_x,
+                                                                landscape.num_of_nodes_y)
 #
-#cPickle.dump(boundary_nodes, open('boundaryNodesInWatersheds.pkl', 'wb'))
-boundary_nodes = cPickle.load(open(saved_files + 'boundaryNodesInWatersheds.pkl', 'rb'))
+cPickle.dump(boundary_nodes, open('boundaryNodesInWatersheds.pkl', 'wb'))
+
+#boundary_nodes = cPickle.load(open(saved_files + 'boundaryNodesInWatersheds.pkl', 'rb'))
 #
 spill_points = trap_analysis.get_spill_points(boundary_nodes, landscape.coordinates[:, 2])
 #
 #
-downslope_neighbors_for_spill_points, in_flow = trap_analysis.get_downslope_neighbors_for_spill_points(
+print 'done spill_points'
+out_flow, in_flow = trap_analysis.get_downslope_neighbors_for_spill_points(
     spill_points, landscape.coordinates[:, 2], nodes_in_watersheds, landscape.num_of_nodes_x, landscape.num_of_nodes_y)
-#
-merged_indices_of_watersheds = trap_analysis.merge_indices_of_watersheds_using_spill_points(
-    nodes_in_watersheds, downslope_neighbors_for_spill_points, in_flow, landscape.total_number_of_nodes)
+print 'Done out_flow, in_flow'
+merged_indices = trap_analysis.merge_indices_of_watersheds_graph(
+    nodes_in_watersheds, landscape.total_number_of_nodes, in_flow, out_flow)
 
-print 'Number of watersheds: ', len(merged_indices_of_watersheds)
-small_ws = [ws for ws in merged_indices_of_watersheds if len(ws) == 1]
+print 'Number of watersheds: ', len(merged_indices)
+small_ws = [ws for ws in merged_indices if len(ws) == 1]
 print 'Number of alone watersheds: ', len(small_ws)
 
 #start = time.time()
@@ -74,16 +76,13 @@ print 'Number of alone watersheds: ', len(small_ws)
 
 new_watersheds = []
 
-for i in range(len(merged_indices_of_watersheds)):
-    print i
-    merged_ws = np.concatenate([nodes_in_watersheds[j] for j in merged_indices_of_watersheds[i]])
-    print merged_ws
+for i in range(len(merged_indices)):
+    merged_ws = np.concatenate([nodes_in_watersheds[j] for j in merged_indices[i]])
     new_watersheds.append(merged_ws)
 
-print new_watersheds
 #cPickle.dump(nodes_in_watersheds, open('watershedsUsingSpillPointAnalysis.pkl', 'wb'))
 #start = time.time()
-#ew_watersheds = cPickle.load(open(saved_files + 'watershedsUsingSpillPointAnalysis.pkl', 'rb'))
+#new_watersheds = cPickle.load(open(saved_files + 'watershedsUsingSpillPointAnalysis.pkl', 'rb'))
 #end = time.time()
 #print 'Number of watersheds: ', len(new_watersheds)
 #small_ws = [ws for ws in new_watersheds if len(ws) == 1]
@@ -91,4 +90,7 @@ print new_watersheds
 
 #print 'Time for loading new watersheds: ', end - start
 
-plot.plot_watersheds_2d(new_watersheds, landscape, 16)
+# plot.plot_watersheds_2d(new_watersheds, landscape, 4)
+# plot.plot_watersheds_and_spill_points_2d(new_watersheds, in_flow, out_flow, landscape, 4)
+plot.plot_watersheds_2d(new_watersheds, landscape, 8)
+#plot.plot_watersheds_and_spill_points_2d(nodes_in_watersheds, in_flow, out_flow, landscape, 4)
