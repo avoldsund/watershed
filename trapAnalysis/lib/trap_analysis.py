@@ -393,9 +393,27 @@ def get_lowest_landscape_boundary_for_watersheds(watersheds, heights, nx, ny):
     return lowest_landscape_boundary_for_ws
 
 
-def get_steepest_spill_pair(boundary_pairs, spill_pairs):
+def get_steepest_spill_pair(boundary_pairs, spill_pair_indices, der_dict):
 
-    steepest_pairs = [boundary_pairs[i][:, spill_pairs[i][0]] for i in range(len(spill_pairs))]
+    # Simply taking the first spill pair
+    # steepest_pairs = [boundary_pairs[i][:, spill_pairs[i][0]] for i in range(len(spill_pairs))]
+
+    # Choosing the spill pair with steepest derivative
+    steepest_pairs = []
+
+    for i in range(len(spill_pair_indices)):
+        indices = spill_pair_indices[i]
+        max_der = -1000
+        pair = None
+        for index in indices:
+            from_node = boundary_pairs[i][0][index]
+            to_node = boundary_pairs[i][1][index]
+            index_of_to = np.where(der_dict[from_node][0] == to_node)[0]
+            der = der_dict[from_node][1][index_of_to]
+            if der > max_der:
+                max_der = der
+                pair = np.array([from_node, to_node])
+        steepest_pairs.append(pair)
 
     return steepest_pairs
 
@@ -411,7 +429,7 @@ def merge_watersheds_based_on_steepest_pairs(steepest_pairs, watersheds, heights
     for i in range(len(steepest_pairs)):
         from_node = steepest_pairs[i][0]
         to_node = steepest_pairs[i][1]
-        if lowest_landscape[i] > heights[from_node] or lowest_landscape[i] == -1:  # Boundary lower than spill point
+        if lowest_landscape[i] >= heights[from_node] or lowest_landscape[i] == -1:  # Boundary lower than spill point
             to_ws = map_node_to_watersheds[to_node]
             ws_graph.add_edge(i, to_ws)
 
@@ -436,12 +454,14 @@ def merge_sub_traps(watersheds, heights, nx, ny):
     changes = True
     iterations = 0
 
+    der_dict = util.get_neighbors_derivatives_dictionary(heights, nx, ny)
     while changes:
+        print iterations
         changes = False
         boundary_pairs = get_boundary_pairs_in_watersheds(watersheds, nx, ny)
         min_of_max_in_each_watershed, max_heights_of_pairs = get_min_height_of_max_of_all_pairs(boundary_pairs, heights)
         spill_pairs = get_spill_pairs(max_heights_of_pairs, min_of_max_in_each_watershed)
-        steepest_spill_pairs = get_steepest_spill_pair(boundary_pairs, spill_pairs)
+        steepest_spill_pairs = get_steepest_spill_pair(boundary_pairs, spill_pairs, der_dict)
 
         merged_ws_indices = merge_watersheds_based_on_steepest_pairs(steepest_spill_pairs, watersheds, heights, nx, ny)
         new_watersheds = merge_watersheds_using_merged_indices(watersheds, merged_ws_indices)
