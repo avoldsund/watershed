@@ -72,7 +72,7 @@ def plot_landscape_3d(landscape, ds):
     plt.show()
 
 
-def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
+def plot_watersheds_2d(nodes_in_watersheds, landscape, ws_above_n_nodes, ds):
     """
     Plot all or some watersheds in the landscape using different colors for different watersheds in 2D. Using the
     standard method.
@@ -96,7 +96,7 @@ def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
 
     # Only plot watersheds with more than n nodes
     large_watersheds = [watershed for watershed in nodes_in_watersheds
-                        if len(watershed) > 0]
+                        if len(watershed) > ws_above_n_nodes]
     large_watersheds.sort(key=len)
     nr_of_large_watersheds = len(large_watersheds)
 
@@ -122,18 +122,15 @@ def plot_watersheds_2d(nodes_in_watersheds, landscape, ds):
                     color=next(color_list), s=30, lw=0, alpha=0.7)
 
     plt.rcParams.update({'font.size': 14})
-    plt.title('All watersheds with over 100 nodes')
+    print ws_above_n_nodes
+    if ws_above_n_nodes == 0:
+        plt.title('All watersheds in the landscape')
+    else:
+        plt.title('All watersheds with over %s nodes in the landscape'%str(ws_above_n_nodes))
     plt.xlabel('x')
     plt.ylabel('y')
 
     plt.show()
-
-
-
-
-
-
-
 
 
 def plot_watersheds_and_spill_points_2d(nodes_in_watersheds, in_flow, out_flow, landscape, ds):
