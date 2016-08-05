@@ -1,15 +1,15 @@
 import sys
 
-path = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/'
+path = '/home/anderovo/Dropbox/watershed/trapAnalysis/'
 sys.path.insert(0, path + 'util')
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
+sys.path.insert(0, '/home/anderovo/Dropbox/watershedLargeFiles')
 import numpy as np
 import util
 import networkx
 import cPickle
 import math
 
-saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
+saved_file_dir = '/home/anderovo/Dropbox/watershedLargeFiles/'
 import time
 import matplotlib.pyplot as plt
 
@@ -75,7 +75,7 @@ def get_node_endpoints_alternative(num_of_cols, num_of_rows, downslope_neighbors
 
 def get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors):
     """
-    Returns the end node if one follow the down slope until reaching a local minimum, for every node
+    Returns the end node if one follows the down slope until reaching a local minimum, for every node
     :param num_of_cols: Number of nodes is x-direction
     :param num_of_rows: Number of nodes in y-direction
     :param downslope_neighbors: Indices of the downslope neighbor for each node. Equal to -1 if the node is a minimum.
@@ -96,6 +96,7 @@ def get_node_endpoints(num_of_cols, num_of_rows, downslope_neighbors):
     while num_of_end_nodes_inserted > 0:
         num_of_end_nodes_inserted, terminal_nodes = update_terminal_nodes(terminal_nodes, downslope_neighbors,
                                                                           indices_in_terminal)
+
     # DO WE REALLY NEED BOTH TERMINAL NODES AND INDICES_IN_TERMINAL????????????????????????????????????????????????
     # YES, BECAUSE WE CAN HAVE 0 (FALSE) AS AN ENDPOINT...?
     # POSSIBLE TO WORK AROUND THIS PROBLEM, I THINK
@@ -458,6 +459,11 @@ def get_external_nbrs_dict_for_watershed(watershed_nr, nbrs_der_dict, watersheds
 
 
 def calculate_watersheds(landscape):
+    """
+    Return the watersheds for a landscape by using spill point analysis.
+    :param landscape: Landscape object having e.g. heights.
+    :return watersheds: A list of all watersheds.
+    """
 
     watersheds_before_merging_spill_traps = get_watersheds(
         landscape.coordinates[:, 2], landscape.num_of_nodes_x, landscape.num_of_nodes_y)

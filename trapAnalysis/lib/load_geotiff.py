@@ -2,7 +2,7 @@ from osgeo import gdal  # For reading tiff files
 import numpy as np      # For masked matrices
 import util
 import sys
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
+sys.path.insert(0, '/home/anderovo/Dropbox/watershed/trapAnalysis/lib')
 import trap_analysis
 import plot
 

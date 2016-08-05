@@ -70,9 +70,9 @@ plot.plot_watersheds_2d(new_watersheds, landscape, 1)
 #print len(new_watersheds_fifth_iteration)
 
 
-#pr.enable()a
+#pr.enable()
 #pr.disable()
-#r.print_stats(sort='cumulative')
+#pr.print_stats(sort='cumulative')
 """print 'Before boundary pairs'
 boundary_pairs = trap_analysis.get_boundary_pairs_in_watersheds(
     watersheds, landscape.num_of_nodes_x, landscape.num_of_nodes_y)

@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
+sys.path.insert(0, '/home/anderovo/Dropbox/watershed/trapAnalysis/lib')
 import load_geotiff
 import plot
 
@@ -7,7 +7,7 @@ import plot
 Plot the landscape using the landscape object holding (x, y, z)-data in 2 dimensions
 """
 
-file_name = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/anders_hoh.tiff'
+file_name = '/home/anderovo/Dropbox/watershedLargeFiles/anders_hoh.tiff'
 
 landscape = load_geotiff.get_landscape_tyrifjorden(file_name)
 downsampling_factor = 1
