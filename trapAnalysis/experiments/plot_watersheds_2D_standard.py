@@ -1,14 +1,14 @@
 import sys
 import numpy as np
 import cPickle
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
+sys.path.insert(0, '/home/anderovo/Dropbox/watershed/trapAnalysis/lib')
+sys.path.insert(0, '/home/anderovo/Dropbox/watershedLargeFiles')
 
 import load_geotiff
 import plot
 import util
 
-saved_files = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
+saved_files = '/home/anderovo/Dropbox/watershedLargeFiles/'
 file_name = saved_files + 'anders_hoh.tiff'
 
 """

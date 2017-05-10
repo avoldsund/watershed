@@ -1,15 +1,15 @@
 import sys
 
-path = '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/'
+path = '/home/anderovo/Dropbox/watershed/trapAnalysis/'
 sys.path.insert(0, path + 'util')
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles')
+sys.path.insert(0, '/home/anderovo/Dropbox/watershedLargeFiles')
 import numpy as np
 import util
 import networkx
 import cPickle
 import math
 
-saved_file_dir = '/home/shomea/a/anderovo/Dropbox/watershedLargeFiles/'
+saved_file_dir = '/home/anderovo/Dropbox/watershedLargeFiles/'
 import time
 import matplotlib.pyplot as plt
 

@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '/home/shomea/a/anderovo/Dropbox/watershed/trapAnalysis/lib')
+sys.path.insert(0, '/home/anderovo/Dropbox/watershed/trapAnalysis/lib')
 import util
 import compare_methods
 import numpy as np
